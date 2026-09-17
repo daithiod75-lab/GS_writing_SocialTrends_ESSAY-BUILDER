@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Social Trends Essay Builder Studio & Bilingual Learning Center for High School Students">
+<title>Social Trends Essay Builder Studio / 社会事象エッセイ作成・学習スタジオ</title>
+<!-- Chosen Palette: Bright Indigo & Emerald Friendly Light Palette (Background: #f8fafc, Surface: #ffffff, Brand: #4338ca, Accent Teal: #0d9488, Warm Amber: #d97706, Coral Pink: #e11d48, High Contrast Text: #0f172a) -->
+<!-- Application Structure Plan:
+     1. Top Navigation & Header Bar: Global action controls (Save, Reset, PDF Export, Auto-save status).
+     2. Four Main Interactive Views:
+        - Home & Welcome Hub: Features an interactive overview of the 5-paragraph framework AND a dedicated interactive section explaining the strict 4-Sentence Body Paragraph Formula with the Oxford Education Board study example.
+        - 10 Topic Essays: Interactive tabbed view displaying expanded 350-450 word essays for all 10 social trend topics. Each essay clearly separates Paragraph 1 (Intro), Paragraphs 2-4 (Body following Topic S1 -> Evidence S2 -> Explanation S3 -> Linking S4), and Paragraph 5 (Conclusion), with highlighted discourse markers, toggleable Japanese translation, TTS audio playback, copy functions, and useful expressions phrase banks.
+        - Challenge Section: Two interactive games:
+            A. Fill-in-the-Blank Discourse Marker Quiz with immediate feedback in English & Japanese.
+            B. Catchy Title Creator Game evaluating title quality with star ratings or a humorous "NOOOOOO!!!!" retry sign.
+        - Write Your Own Essay Studio: Student metadata inputs (Name, Student ID, Class), bold title editor, essential structure checklist, live counters (words, sentences, characters), auto-save persistence via LocalStorage, and dedicated PDF Export/Printing layout (@media print).
+     3. Complete bilingual support (English and Japanese) across all views and UI components.
+-->
+<!-- Visualization & Content Choices: Styled HTML/CSS layouts, Tailwind-inspired flex/grid components, dynamic JS logic, Unicode icons/emojis, HTML5 audio synthesis. NO SVG images used. NO Mermaid JS used. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<style>
+:root{
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface2: #f1f5f9;
+  --text: #0f172a;
+  --muted: #475569;
+  --line: #cbd5e1;
+  --line-strong: #94a3b8;
+  --brand: #4338ca;
+  --brand-hover: #3730a3;
+  --brand-light: #eef2ff;
+  --brand-text: #312e81;
+  --accent: #0d9488;
+  --accent-light: #ccfbf1;
+  --amber: #d97706;
+  --amber-light: #fef3c7;
+  --rose: #e11d48;
+  --rose-light: #ffe4e6;
+  --warn-bg: #fffbeb;
+  --warn-border: #fde68a;
+  --warn-text: #78350f;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  --success-text: #14532d;
+  --shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+  --radius: 14px;
+}
+
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans JP",sans-serif;line-height:1.65;}
+button,input,textarea,select{font:inherit} button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+
+/* Topbar Styling */
+.topbar{position:sticky;top:0;z-index:30;background:#1e1b4b;color:#ffffff;border-bottom:2px solid #312e81;box-shadow:var(--shadow)}
+.topbar-inner{max-width:1400px;margin:auto;padding:12px 24px;display:flex;gap:18px;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:12px;align-items:center}
+.brand-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#0d9488);display:grid;place-items:center;color:#ffffff;font-weight:900;font-size:22px;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.brand h1{font-size:18px;margin:0;font-weight:800;color:#ffffff;letter-spacing:-0.01em}
+.brand small{display:block;color:#c7d2fe;font-size:12px;font-weight:500}
+
+.top-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.autosave{font-size:13px;color:#86efac;font-weight:700;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:20px}
+
+/* Navigation Bar */
+.nav{background:#0f172a;border-top:1px solid #1e293b;overflow-x:auto}
+.nav-inner{max-width:1400px;margin:auto;display:flex;min-width:max-content;padding:0 24px;gap:6px}
+.nav button{background:none;border:0;color:#94a3b8;padding:14px 18px;border-bottom:3px solid transparent;font-weight:700;font-size:14px;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px}
+.nav button:hover{color:#ffffff;background:#1e293b}
+.nav button.active{color:#ffffff;border-color:#818cf8;background:#1e1b4b}
+
+/* Views & Containers */
+main{max-width:1400px;margin:auto;padding:28px 24px 60px}
+.view{display:none}.view.active{display:block}
+
+/* Hero Banners */
+.hero{background:linear-gradient(135deg,#312e81,#4338ca 50%,#0d9488);color:#ffffff;border-radius:20px;padding:36px;box-shadow:var(--shadow);margin-bottom:24px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-50px;bottom:-50px;width:220px;height:220px;background:rgba(255,255,255,0.06);border-radius:50%;pointer-events:none}
+.hero h2{font-size:clamp(24px,3.5vw,34px);line-height:1.2;margin:10px 0;color:#ffffff;font-weight:900}
+.hero p{max-width:920px;color:#e0e7ff;margin:10px 0 22px;font-size:15px;font-weight:500;line-height:1.7}
+
+/* Grid Layouts & Cards */
+.grid{display:grid;gap:20px}.cols2{grid-template-columns:repeat(2,minmax(0,1fr))}.cols3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.card h3,.card h4{margin-top:0;color:var(--text);font-weight:800}
+.muted{color:var(--muted);font-weight:500}
+.small{font-size:13px}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin-bottom:6px;display:block}
+
+/* Buttons */
+.btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--text);padding:10px 16px;border-radius:10px;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s ease}
+.btn:hover{background:var(--surface2);border-color:var(--text)}
+.btn.primary{background:var(--brand);color:#ffffff;border-color:var(--brand)}
+.btn.primary:hover{background:var(--brand-hover)}
+.btn.ghost{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:#ffffff}
+.btn.ghost:hover{background:rgba(255,255,255,0.25);border-color:#ffffff}
+.btn.accent{background:var(--accent);color:#ffffff;border-color:var(--accent)}
+.btn.accent:hover{background:#0f766e}
+.btn.amber{background:var(--amber);color:#ffffff;border-color:var(--amber)}
+.btn.amber:hover{background:#b45309}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:800;background:var(--brand-light);color:var(--brand-text);border:1px solid #c7d2fe}
+.badge.green{background:var(--success-bg);color:var(--success-text);border-color:var(--success-border)}
+.badge.amber{background:var(--amber-light);color:#92400e;border-color:#fde68a}
+
+/* Form Elements */
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+label{font-weight:800;font-size:14px;display:block;margin-bottom:6px;color:var(--text)}
+input,textarea,select{width:100%;border:1px solid var(--line-strong);background:var(--surface);border-radius:10px;padding:12px;color:var(--text);font-size:14px;font-weight:500}
+input::placeholder,textarea::placeholder{color:#94a3b8}
+input:focus,textarea:focus,select:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px rgba(67,56,202,0.18)}
+textarea{min-height:120px;resize:vertical}
+.field{margin-bottom:16px}
+
+/* Topic Tabs Navigation */
+.topic-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:20px;scrollbar-width:thin}
+.topic-tab{background:var(--surface2);border:1px solid var(--line);padding:10px 16px;border-radius:10px;font-weight:700;font-size:13px;white-space:nowrap;color:var(--muted);transition:all 0.2s;display:flex;align-items:center;gap:6px}
+.topic-tab:hover{background:var(--brand-light);color:var(--brand-text);border-color:#a5b4fc}
+.topic-tab.active{background:var(--brand);color:#ffffff;border-color:var(--brand);box-shadow:0 4px 12px rgba(67,56,202,0.25)}
+
+/* Essay Display Boxes */
+.essay-box{background:#f8fafc;border:1px solid var(--line-strong);border-radius:14px;padding:22px;font-size:14.5px;line-height:1.85;color:var(--text);margin-bottom:20px}
+.essay-paragraph{background:#ffffff;border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 2px 5px rgba(0,0,0,0.02)}
+.essay-paragraph:last-child{margin-bottom:0}
+.para-tag{font-size:11px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;padding:3px 8px;border-radius:4px;display:inline-block;margin-bottom:8px}
+.tag-intro{background:#e0e7ff;color:#312e81}
+.tag-body{background:#ccfbf1;color:#0f766e}
+.tag-conclusion{background:#fef3c7;color:#92400e}
+
+/* Sentence-level styling for guidance analysis */
+.sentence-item{position:relative;padding:12px 14px 12px 42px;border-radius:8px;margin-bottom:8px;font-size:14px;line-height:1.7;background:#ffffff;border:1px solid var(--line)}
+.sentence-num{position:absolute;left:10px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
+.s-label{font-weight:800;color:var(--brand-text);display:block;font-size:12px;margin-bottom:2px}
+
+/* Discourse Markers Highlight Styling */
+.marker-highlight{background:#e0e7ff;color:#312e81;padding:2px 7px;border-radius:6px;font-weight:800;border-bottom:2px solid #6366f1;display:inline-block;margin:0 2px}
+.evidence-highlight{background:#ccfbf1;color:#0f766e;padding:2px 7px;border-radius:6px;font-weight:700}
+.trans-highlight{background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:6px;font-weight:700}
+
+/* Translation & Expressions Boxes */
+.translation-box{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:20px}
+.vocab-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;list-style:none;padding:0;margin:0}
+.vocab-item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,0.02)}
+.vocab-item .en-phrase{color:var(--brand);font-weight:800;display:block;margin-bottom:2px;font-size:14px}
+.vocab-item .jp-phrase{color:var(--muted);font-weight:600}
+
+/* Challenge Section Specifics */
+.challenge-blank{display:inline-block;width:170px;padding:4px 10px;border:2px dashed var(--brand);border-radius:8px;font-weight:700;text-align:center;background:#ffffff;color:var(--brand-text);margin:0 4px}
+.star-rating{font-size:32px;color:#f59e0b;letter-spacing:6px;animation:pop 0.3s ease-out}
+.no-sign{font-size:22px;font-weight:900;color:#dc2626;background:#fee2e2;padding:12px 20px;border-radius:12px;display:inline-block;border:2px solid #f87171;box-shadow:0 4px 12px rgba(220,38,38,0.15)}
+
+@keyframes pop { 0%{transform:scale(0.8)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+
+/* Student Writing Studio Specifics */
+.student-meta-box{background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1px solid #c7d2fe;border-radius:14px;padding:20px;margin-bottom:20px}
+.custom-essay-title{font-size:22px;font-weight:900;color:var(--brand-text);border:2px solid var(--line-strong);border-radius:10px;padding:12px 16px;background:#ffffff;min-height:54px;outline:none;transition:all 0.2s}
+.custom-essay-title:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(67,56,202,0.18)}
+.custom-essay-title[contenteditable]:empty:before{content:attr(placeholder);color:#94a3b8;font-weight:600}
+
+.editor{min-height:420px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14.5px;line-height:1.8;background:#ffffff;color:#020617;border:2px solid var(--line-strong);font-weight:600;border-radius:12px}
+.wordbar{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;color:var(--text);font-weight:800;margin-top:12px;background:var(--surface2);padding:12px 18px;border-radius:10px;border:1px solid var(--line)}
+
+/* Toast Notifications */
+.toast{position:fixed;right:24px;bottom:24px;background:#0f172a;color:#ffffff;padding:14px 24px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.3);opacity:0;transform:translateY(15px);pointer-events:none;transition:.2s ease;z-index:50;font-weight:700;border:1px solid #334155}
+.toast.show{opacity:1;transform:none}
+
+/* Structure Flow Indicator Cards */
+.flow-step{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--brand);border-radius:10px;padding:14px 18px;margin-bottom:10px}
+.flow-step h5{margin:0 0 4px;color:var(--brand);font-size:15px;font-weight:800}
+
+/* Bilingual Text Components */
+.bi-group { display: flex; flex-direction: column; gap: 2px; }
+.bi-en { font-weight: 700; color: var(--text); }
+.bi-ja { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+footer{text-align:center;color:var(--muted);font-size:13px;font-weight:600;padding:32px 20px;border-top:1px solid var(--line);margin-top:40px}
+
+/* Print Styles for PDF Export */
+@media print{
+  .topbar,.nav,.top-actions,.btn,footer,.toast,.topic-tabs,.no-print{display:none!important}
+  body{background:#ffffff!important;color:#000000!important}
+  main{max-width:100%!important;padding:0!important}
+  .view{display:none!important}.view#view-own{display:block!important}
+  .card,.hero,.student-meta-box{box-shadow:none!important;border:1px solid #000000!important;background:#ffffff!important;color:#000000!important;padding:16px!important;margin-bottom:16px!important}
+  .editor{border:1px solid #000000!important;min-height:500px!important;background:#ffffff!important;color:#000000!important;padding:12px!important}
+  .custom-essay-title{border:1px solid #000000!important;color:#000000!important;font-size:22px!important;font-weight:bold!important}
+  .badge{border:1px solid #000000!important;color:#000000!important;background:none!important}
+}
+
+@media(max-width:1024px){.cols2,.cols3{grid-template-columns:1fr}.topbar-inner{align-items:flex-start;flex-direction:column}}
+@media(max-width:560px){main{padding:16px}.hero,.card{padding:18px}}
+</style>
+</head>
+<body>
+
+<!-- TOP HEADER BAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">文</div>
+      <div>
+        <h1>Social Trends Essay Builder Studio</h1>
+        <small>Japanese Social Issues Essay Studio / 社会事象エッセイ作成・学習スタジオ</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="autosave" id="saveStatus">✓ Auto-Saved / 自動保存済</span>
+      <button class="btn ghost" onclick="saveAll()" title="Save Data">💾 <span class="bi-group"><span class="bi-en" style="color:#fff">Save</span><span class="bi-ja" style="color:#cbd5e1">保存</span></span></button>
+      <button class="btn ghost" onclick="resetAll()" title="Reset Data">↺ <span class="bi-group"><span class="bi-en" style="color:#fff">Reset</span><span class="bi-ja" style="color:#cbd5e1">リセット</span></span></button>
+      <button class="btn accent" onclick="exportPDF()">🖨 <span class="bi-group"><span class="bi-en" style="color:#fff">PDF Export & Print</span><span class="bi-ja" style="color:#ccfbf1">PDF保存・印刷</span></span></button>
+    </div>
+  </div>
+  
+  <!-- NAVIGATION TABS -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <button class="active" data-view="home">🏠 <span class="bi-group"><span class="bi-en" style="color:inherit">Home & Guidance</span><span class="bi-ja" style="color:inherit">ホーム・段落構成指導</span></span></button>
+      <button data-view="essays">📖 <span class="bi-group"><span class="bi-en" style="color:inherit">10 Topic Essays</span><span class="bi-ja" style="color:inherit">10の社会事象エッセイ</span></span></button>
+      <button data-view="challenge">🎯 <span class="bi-group"><span class="bi-en" style="color:inherit">Challenge Section</span><span class="bi-ja" style="color:inherit">チャレンジセクション</span></span></button>
+      <button data-view="own">✍️ <span class="bi-group"><span class="bi-en" style="color:inherit">Write Your Own Essay</span><span class="bi-ja" style="color:inherit">エッセイを自分で書く</span></span></button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <!-- 1. HOME & GUIDANCE VIEW -->
+  <section id="view-home" class="view active">
+    <!-- Hero Banner -->
+    <div class="hero">
+      <span class="badge" style="background:#ffffff; color:#312e81">✨ Comprehensive Essay Writing Framework</span>
+      <h2>Mastering 5-Paragraph Essays on Japanese Social Trends</h2>
+      <p class="bi-en">Explore professionally expanded essays covering 10 major social issues in Japan. Every essay is strictly structured into 5 paragraphs: Introduction, 3 Main Body Paragraphs (following a precise 4-sentence formula), and a Conclusion!</p>
+      <p class="bi-ja" style="color:#f1f5f9; margin-top:-10px; font-size:14px;">日本の主要な10の社会課題を扱う拡張版エッセイ集。すべてのエッセイは「導入＋本論3段落（4文の厳密ルール）＋結論」の5段落構成で書かれています。</p>
+      <div class="row" style="margin-top:22px;">
+        <button class="btn primary" onclick="scrollToGuidance()">📘 <span class="bi-group"><span class="bi-en" style="color:#fff">View Paragraph Formula</span><span class="bi-ja" style="color:#e0e7ff">本論段落の作成ルールを見る</span></span></button>
+        <button class="btn ghost" onclick="go('essays')">📖 <span class="bi-group"><span class="bi-en" style="color:#fff">Explore 10 Essays</span><span class="bi-ja" style="color:#e0e7ff">10のエッセイを読む</span></span></button>
+        <button class="btn ghost" onclick="go('own')">✍️ <span class="bi-group"><span class="bi-en" style="color:#fff">Write Your Essay</span><span class="bi-ja" style="color:#e0e7ff">エッセイを書く</span></span></button>
+      </div>
+    </div>
+
+    <!-- Features Overview -->
+    <div class="grid cols3">
+      <div class="card">
+        <span class="kicker">Feature 01 · Model Essays</span>
+        <h3><span class="bi-group"><span class="bi-en">10 Social Trends</span><span class="bi-ja">10の社会トレンド</span></span></h3>
+        <p class="muted">Living costs, labor shortages, tourism, AI, demographic decline, and more with 5 full paragraphs and evidence.<br><span class="bi-ja">物価高、人手不足、観光公害、AIなど、根拠と転換語を明記した5段落構成の本格エッセイです。</span></p>
+        <button class="btn" onclick="go('essays')"><span class="bi-group"><span class="bi-en">View Essays</span><span class="bi-ja">エッセイ一覧へ</span></span> →</button>
+      </div>
+
+      <div class="card">
+        <span class="kicker">Feature 02 · Challenges</span>
+        <h3><span class="bi-group"><span class="bi-en">Interactive Games</span><span class="bi-ja">インタラクティブ挑戦</span></span></h3>
+        <p class="muted">Complete fill-in-the-blank essays with instant feedback, and play the catchy Title Creator Game.<br><span class="bi-ja">穴埋め問題のフィードバックや、キャッチーなタイトルを考えて星を獲得するゲームに挑戦できます。</span></p>
+        <button class="btn" onclick="go('challenge')"><span class="bi-group"><span class="bi-en">Open Challenges</span><span class="bi-ja">チャレンジへ</span></span> →</button>
+      </div>
+
+      <div class="card">
+        <span class="kicker">Feature 03 · PDF Studio</span>
+        <h3><span class="bi-group"><span class="bi-en">Drafting & PDF Export</span><span class="bi-ja">作文とPDF保存</span></span></h3>
+        <p class="muted">Enter student details and title, write your essay following the essential structure, and securely export to PDF.<br><span class="bi-ja">氏名や学籍番号、タイトルを入力してエッセイを作成し、PDFとして保存・印刷が可能です。</span></p>
+        <button class="btn" onclick="go('own')"><span class="bi-group"><span class="bi-en">Open Studio</span><span class="bi-ja">作文スタジオへ</span></span> →</button>
+      </div>
+    </div>
+
+    <!-- DEDICATED GUIDANCE SECTION -->
+    <div id="guidanceSection" class="card" style="margin-top:28px; background:linear-gradient(135deg,#ffffff,#f8fafc); border:2px solid #6366f1;">
+      <div class="row between">
+        <div>
+          <span class="badge" style="background:var(--brand); color:#fff;">📐 Writing Guidance Section / 作文指導ガイド</span>
+          <h2 style="color:var(--brand-text); margin-top:8px;">Paragraph & Sentence Structure Formula</h2>
+        </div>
+        <span class="badge green">Strict 4-Sentence Main Body Rule</span>
+      </div>
+      
+      <p class="muted" style="margin-top:8px;">
+        To build strong, logical, and persuasive high-school level social trend essays, each essay is structured into <b>5 Paragraphs</b>: <i>Introduction</i>, <i>Main Body Paragraph 1</i>, <i>Main Body Paragraph 2</i>, <i>Main Body Paragraph 3</i>, and <i>Conclusion</i>.
+        <br><span class="bi-ja">論理的で説得力のある社会事象エッセイを作成するために、各エッセイは「導入」「本論1」「本論2」「本論3」「結論」の5段落で構成されます。</span>
+      </p>
+
+      <!-- 4-Sentence Rule Breakdown Cards -->
+      <h3 style="margin-top:24px; color:var(--brand); border-bottom:2px solid #e0e7ff; padding-bottom:8px;">
+        🔍 The 4-Sentence Main Body Paragraph Formula (本論段落の4文ルール)
+      </h3>
+      
+      <div class="grid cols2" style="margin-top:16px;">
+        <div class="flow-step">
+          <h5>Sentence One: Topic Sentence (トピックセンテンス)</h5>
+          <span class="bi-en">Clearly state the main topic or main idea of the paragraph.</span>
+          <span class="bi-ja">その段落で最も伝えたいメインの主張・テーマを明確に述べます。</span>
+        </div>
+
+        <div class="flow-step" style="border-left-color:var(--accent)">
+          <h5>Sentence Two: Supporting Evidence (根拠・データ)</h5>
+          <span class="bi-en">An example from real life (statistics, quote from newspaper/book/website) which proves that the topic is true.</span>
+          <span class="bi-ja">現実の例（統計データ、新聞・本・ウェブサイトからの引用や事実）を用いて主張を証明します。</span>
+        </div>
+
+        <div class="flow-step" style="border-left-color:var(--amber)">
+          <h5>Sentence Three: Explanation (解説・展開)</h5>
+          <span class="bi-en">An explanation of why the second sentence supports the topic (transition words like <i>"This shows"</i>, <i>"As a result"</i>, <i>"So,"</i> are essential here).</span>
+          <span class="bi-ja">なぜ第2文のデータが主張を裏付けるのかを説明します（「This shows」「As a result」などの転換語を使用）。</span>
+        </div>
+
+        <div class="flow-step" style="border-left-color:var(--rose)">
+          <h5>Sentence Four: Linking Sentence (橋渡し文)</h5>
+          <span class="bi-en">A linking sentence: this summarizes the idea presented in the topic and makes a "bridge" to the next paragraph.</span>
+          <span class="bi-ja">段落のアイデアを要約し、次の段落や全体の議論へスムーズにつなぐ橋渡し（ブリッジ）を行います。</span>
+        </div>
+      </div>
+
+      <!-- Sample Main Body Paragraph Analysis -->
+      <div class="card" style="margin-top:20px; background:var(--brand-light); border-color:#c7d2fe;">
+        <div class="row between">
+          <h4 style="margin:0; color:var(--brand-text)">📝 Official Reference Sample Main Body Paragraph</h4>
+          <span class="badge amber">Example Breakdown</span>
+        </div>
+        <p class="muted small" style="margin:6px 0 14px;">Notice how each sentence serves its designated function perfectly:</p>
+        
+        <div class="sentence-item">
+          <span class="sentence-num">1</span>
+          <span class="s-label">Sentence 1: Topic Sentence</span>
+          First, regular physical exercise significantly improves a student's mental focus.
+        </div>
+
+        <div class="sentence-item">
+          <span class="sentence-num">2</span>
+          <span class="s-label">Sentence 2: Supporting Evidence (Statistics & Quote)</span>
+          According to a 2024 study by the Oxford Education Board, students who walk or exercise for twenty minutes before class score 15% higher on concentration tests.
+        </div>
+
+        <div class="sentence-item">
+          <span class="sentence-num">3</span>
+          <span class="s-label">Sentence 3: Explanation (Transition Words)</span>
+          <span class="marker-highlight">This shows that</span> physical movement increases blood flow to the brain, which helps students stay awake and absorb information faster.
+        </div>
+
+        <div class="sentence-item">
+          <span class="sentence-num">4</span>
+          <span class="s-label">Sentence 4: Linking Sentence (Bridge)</span>
+          <span class="marker-highlight">Because</span> physical activity clears the mind for better learning, schools should look closely at how sports affect daily academic habits.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 10 TOPIC ESSAYS VIEW -->
+  <section id="view-essays" class="view">
+    <div class="card">
+      <div class="row between">
+        <div>
+          <span class="kicker">Expanded Model Essays Collection / 拡張版模範エッセイ集</span>
+          <h2><span class="bi-group"><span class="bi-en">Social Trends in Japan (5 Paragraphs Each)</span><span class="bi-ja">日本の社会トレンドに関する5段落構成エッセイ</span></span></h2>
+        </div>
+        <span class="badge" id="essayWordCountBadge">~380-450 Words / 語</span>
+      </div>
+      <p class="muted" style="margin-top:6px">Select a topic below to explore the 5-paragraph model essay structured strictly around the 4-sentence main body paragraph rule.<br><span class="bi-ja">以下のタブからトピックを選択すると、本論4文ルールに基づく5段落構成エッセイが表示されます。</span></p>
+
+      <!-- Topic Navigation Tabs -->
+      <div class="topic-tabs" id="essayTabs"></div>
+
+      <!-- Active Essay Display Container -->
+      <div class="grid cols2" style="align-items:start">
+        <!-- Left Box: Essay Content -->
+        <div class="card" style="background:#ffffff; border:1px solid var(--line-strong)">
+          <div class="row between">
+            <h3 id="currentEssayTitle" style="color:var(--brand); margin:0;"></h3>
+            <span class="badge" id="currentWordCount">410 Words</span>
+          </div>
+          <div id="currentEssayBody" class="essay-box" style="margin-top:16px"></div>
+          <div class="row">
+            <button class="btn primary" onclick="speakCurrentEssay()">🔊 <span class="bi-group"><span class="bi-en" style="color:#fff">Listen (Audio)</span><span class="bi-ja" style="color:#e0e7ff">音声読上げ</span></span></button>
+            <button class="btn" onclick="copyCurrentEssay()">📋 <span class="bi-group"><span class="bi-en">Copy English</span><span class="bi-ja">英文をコピー</span></span></button>
+          </div>
+        </div>
+
+        <!-- Right Box: Translation & Useful Expressions -->
+        <div>
+          <div class="translation-box">
+            <div class="row between">
+              <h4 style="margin:0">🇯🇵 <span class="bi-group"><span class="bi-en">Japanese Translation (5 Paragraphs)</span><span class="bi-ja">日本語訳（全5段落）</span></span></h4>
+              <button class="btn" style="padding:4px 10px; font-size:12px" onclick="toggleTranslation()" id="transToggleBtn">非表示にする</button>
+            </div>
+            <div id="currentEssayTranslation" style="margin-top:14px; line-height:1.8; font-weight:500;"></div>
+          </div>
+
+          <div class="card" style="background:var(--surface2)">
+            <h4 style="color:var(--brand-text); margin-top:0">💡 <span class="bi-group"><span class="bi-en">Useful Expressions (Used in Essay)</span><span class="bi-ja">お役立ち表現（本文で使用）</span></span></h4>
+            <ul id="currentEssayExpressions" class="vocab-list" style="margin-top:12px"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. CHALLENGE SECTION VIEW -->
+  <section id="view-challenge" class="view">
+    <div class="hero" style="background:linear-gradient(135deg,#0d9488,#0f766e 60%,#1e1b4b)">
+      <span class="badge" style="background:#ffffff; color:#0f766e">Interactive Challenges / チャレンジセクション</span>
+      <h2>Test Your Knowledge & Title Creativity</h2>
+      <p class="bi-en">Practice applying transition markers within structured main body paragraphs, and test your headline skills in the Catchy Title Creator Game!</p>
+      <p class="bi-ja" style="color:#f1f5f9; margin-top:-10px; font-size:14px;">段落構成に沿った転換語の穴埋め問題で知識を確認し、タイトル考案ゲームで魅力的なタイトルをつけて星をゲットしよう！</p>
+    </div>
+
+    <div class="grid cols2">
+      <!-- Challenge A: Fill in the Blanks -->
+      <div class="card">
+        <span class="kicker">Challenge A · Sentence Formula Quiz</span>
+        <h3><span class="bi-group"><span class="bi-en">Fill-in-the-Blank Transition Challenge</span><span class="bi-ja">転換語の穴埋め問題</span></span></h3>
+        <p class="muted">Fill in the missing transition words (Sentence 3 & 4) to complete this main body paragraph.<br><span class="bi-ja">本論段落（第3文・第4文）に最適な転換語を入力してください。</span></p>
+
+        <div class="essay-box" style="margin-top:16px; background:#ffffff">
+          <p style="text-indent:0"><b>Paragraph 2 (Body 1):</b><br>
+          First, rising prices remain a major financial burden for Japanese households.<br>
+          According to a 2024 survey by the Ministry of Internal Affairs, food inflation reached a 40-year high of 6.5% earlier this year.<br>
+          <input id="cb1" class="challenge-blank" placeholder="e.g. This shows that"> essential groceries are eating up a larger portion of family earnings every month.<br>
+          <input id="cb2" class="challenge-blank" placeholder="e.g. As a result">, consumers must carefully limit non-essential spending, which leads to wider economic slowdowns.
+          </p>
+          <p style="text-indent:0; margin-top:14px;"><b>Paragraph 5 (Conclusion):</b><br>
+          <input id="cb3" class="challenge-blank" placeholder="e.g. In conclusion">, stabilizing inflation through targeted wage support is imperative for Japan's future.
+          </p>
+        </div>
+
+        <div class="row between">
+          <button class="btn primary" onclick="submitBlanksChallenge()">✓ <span class="bi-group"><span class="bi-en" style="color:#fff">Submit & Get Feedback</span><span class="bi-ja" style="color:#e0e7ff">解答してフィードバックを受け取る</span></span></button>
+          <button class="btn" onclick="resetBlanksChallenge()">↺ <span class="bi-group"><span class="bi-en">Reset</span><span class="bi-ja">リセット</span></span></button>
+        </div>
+
+        <div id="blankFeedback" class="card hidden" style="margin-top:16px; background:var(--success-bg); border-color:var(--success-border)"></div>
+      </div>
+
+      <!-- Challenge B: Title Creator Game -->
+      <div class="card">
+        <span class="kicker">Challenge B · Title Creator Game</span>
+        <h3><span class="bi-group"><span class="bi-en">Catchy Title Creator</span><span class="bi-ja">キャッチータイトル考案ゲーム</span></span></h3>
+        <p class="muted">Read the short summary below and craft an intriguing, catchy title for it!<br><span class="bi-ja">以下の要約を読み、魅力的でキャッチーなタイトルを考案して入力してください。</span></p>
+
+        <div class="essay-box" style="margin-top:16px; font-size:14px; background:#ffffff">
+          <p style="text-indent:0"><em>"In recent years, remote work and 'workation' lifestyles have surged across rural towns in Japan. Professionals from Tokyo are relocating temporarily to scenic mountains and coastal villages, boosting local cafes and coworking spaces while enjoying a healthier, slower pace of life. Regional municipalities are enthusiastically offering digital nomad visas and subsidized housing to support this migration."</em></p>
+          <p class="muted small" style="text-indent:0">（近年、日本の地方都市でリモートワークや「ワーケーション」が急増しています。東京のプロフェッショナルが山間部や海岸の村に移住し、カフェやコワーキングスペースを盛り上げています。）</p>
+        </div>
+
+        <div class="field" style="margin-top:14px">
+          <label><span class="bi-group"><span class="bi-en">Your Created Essay Title / あなたの考案したタイトル</span></span></label>
+          <input id="userTitleInput" placeholder="e.g. The Rural Renaissance: How Remote Work is Transforming Japanese Towns">
+        </div>
+
+        <div class="row between">
+          <button class="btn amber" onclick="submitTitleGame()">⭐ <span class="bi-group"><span class="bi-en" style="color:#fff">Submit Title</span><span class="bi-ja" style="color:#fef3c7">タイトルを提出する</span></span></button>
+          <div id="titleFeedbackResult"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. WRITE YOUR OWN ESSAY VIEW -->
+  <section id="view-own" class="view">
+    <div class="hero">
+      <span class="badge" style="background:#ffffff; color:#312e81">Student Writing Studio / エッセイ作成スタジオ</span>
+      <h2>Write Your Own 5-Paragraph Essay</h2>
+      <p class="bi-en">Fill in your personal information, craft your title in bold, and write your 5-paragraph essay following the 4-sentence formula for each body paragraph. Your work auto-saves locally and is ready to print or save as PDF!</p>
+      <p class="bi-ja" style="color:#f1f5f9; margin-top:-10px; font-size:14px;">個人情報とタイトルを入力し、各本論段落の4文ルールに従ってエッセイを作成しましょう。入力内容は自動保存され、いつでもPDF保存・印刷が可能です。</p>
+    </div>
+
+    <div class="grid cols2" style="align-items:start">
+      <!-- Left: Student Info & Guidelines -->
+      <div>
+        <div class="card student-meta-box">
+          <h3>👤 <span class="bi-group"><span class="bi-en">Student Information</span><span class="bi-ja">生徒情報</span></span></h3>
+          <div class="field" style="margin-top:14px">
+            <label><span class="bi-group"><span class="bi-en">Student Name / 氏名</span></span></label>
+            <input id="sName" placeholder="e.g. Taro Yamada / 山田 太郎" oninput="saveAll()">
+          </div>
+          <div class="field">
+            <label><span class="bi-group"><span class="bi-en">Student Number / 学籍番号・出席番号</span></span></label>
+            <input id="sNumber" placeholder="e.g. 24018" oninput="saveAll()">
+          </div>
+          <div class="field">
+            <label><span class="bi-group"><span class="bi-en">Class Number / クラス番号</span></span></label>
+            <input id="sClass" placeholder="e.g. Class 2-A / 2年A組" oninput="saveAll()">
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:20px; background:var(--brand-light); border-color:#c7d2fe">
+          <h3 style="color:var(--brand-text); margin-top:0">📌 <span class="bi-group"><span class="bi-en">5-Paragraph Checklist</span><span class="bi-ja">5段落構成チェックリスト</span></span></h3>
+          <ul style="margin:10px 0 0; padding-left:20px; font-size:13.5px; color:var(--text); line-height:1.75; font-weight:600">
+            <li><b>Paragraph 1: Introduction</b> (General background + Thesis statement)</li>
+            <li><b>Paragraph 2: Main Body 1</b> (S1 Topic, S2 Evidence/Data, S3 Explanation with <i>"This shows..."</i>, S4 Bridge)</li>
+            <li><b>Paragraph 3: Main Body 2</b> (S1 Topic, S2 Evidence/Data, S3 Explanation with <i>"As a result..."</i>, S4 Bridge)</li>
+            <li><b>Paragraph 4: Main Body 3</b> (S1 Topic, S2 Evidence/Data, S3 Explanation with <i>"Consequently..."</i>, S4 Bridge)</li>
+            <li><b>Paragraph 5: Conclusion</b> (Summary starting with <i>"In conclusion"</i> + Final proposal)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Right: Essay Title & Editor -->
+      <div class="card">
+        <div class="row between">
+          <h3 style="margin:0">📝 <span class="bi-group"><span class="bi-en">Your Essay Drafting Canvas</span><span class="bi-ja">エッセイ作成キャンバス</span></span></h3>
+          <span class="badge green">Auto-Saved / 自動保存</span>
+        </div>
+        <p class="muted small" style="margin:8px 0 16px">Type or edit your essay title and body below. Target length: ~300–450 words.<br><span class="bi-ja">枠内にタイトルと本文を入力してください。目標語数：300〜450語程度。</span></p>
+
+        <div class="field">
+          <label><span class="bi-group"><span class="bi-en">Essay Title (Bold & Larger Font) / エッセイタイトル</span></span></label>
+          <div id="ownTitle" class="custom-essay-title" contenteditable="true" placeholder="Type your catchy essay title here..." oninput="saveAll()"></div>
+        </div>
+
+        <div class="field">
+          <label><span class="bi-group"><span class="bi-en">Essay Body (5 Paragraphs) / エッセイ本文</span></span></label>
+          <textarea id="ownBody" class="editor" placeholder="Paragraph 1 (Intro):
+In recent years, ...
+
+Paragraph 2 (Body 1):
+First, ... According to ... This shows that ... Because of this, ...
+
+Paragraph 3 (Body 2):
+Second, ... Studies reveal ... As a result, ... Therefore, ...
+
+Paragraph 4 (Body 3):
+Third, ... Reports indicate ... Consequently, ... Thus, ...
+
+Paragraph 5 (Conclusion):
+In conclusion, ..." oninput="updateOwnStats();saveAll()"></textarea>
+        </div>
+
+        <div class="wordbar">
+          <span>Words: <b id="ownWordCount" style="color:var(--brand)">0</b></span>
+          <span>Sentences: <b id="ownSentenceCount" style="color:var(--brand)">0</b></span>
+          <span>Characters: <b id="ownCharCount" style="color:var(--brand)">0</b></span>
+        </div>
+
+        <div class="toolbar" style="margin-top:18px; display:flex; gap:10px;">
+          <button class="btn primary" onclick="exportPDF()">🖨 <span class="bi-group"><span class="bi-en" style="color:#fff">Save as PDF / Print</span><span class="bi-ja" style="color:#e0e7ff">PDF保存・印刷</span></span></button>
+          <button class="btn" onclick="copyOwnEssay()">📋 <span class="bi-group"><span class="bi-en">Copy Text</span><span class="bi-ja">テキストをコピー</span></span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Social Trends Essay Builder Studio · High School Bilingual Learning Edition · All work stored locally in your browser.
+  <div style="margin-top:4px; font-size:12px; color:var(--muted)">社会事象エッセイ作成スタジオ · 入力データはブラウザ内に自動保持されます。</div>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* FULL 10 MODEL ESSAYS DATA (5 PARAGRAPHS EACH FOLLOWING STRICT 4-SENTENCE BODY FORMULA) */
+const essaysData = [
+  {
+    id: 1,
+    title: "1. Cost of Living and Food Prices / 生活費と食料価格の高騰",
+    wordCount: "415 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "Rising living expenses and persistent food inflation have emerged as central socioeconomic concerns for households across modern Japan. Over the past two years, global supply chain bottlenecks, currency depreciation, and surging raw material costs have combined to drive up everyday expenditures. Understanding the primary drivers of this crisis is essential for developing effective policy solutions."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Food Inflation)",
+        text: "First, food inflation has created an immediate financial burden on everyday domestic budgets. <span class=\"evidence-highlight\">According to a 2024 survey by the Ministry of Internal Affairs, food prices in Japan rose by 6.5% annually, with essential staples like rice and bread suffering sudden cost spikes.</span> <span class=\"marker-highlight\">This shows that</span> basic daily nutrition now absorbs a significantly larger share of average family incomes than in previous decades. <span class=\"marker-highlight\">Because</span> households cannot easily reduce food consumption, high inflation directly undermines overall consumer purchasing power."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (Energy & Utilities)",
+        text: "Second, escalating utility and energy bills have placed additional strain on low- and middle-income residents. <span class=\"evidence-highlight\">Data from the Agency for Natural Resources and Energy revealed that household electricity rates increased by over 18% following international energy market volatility.</span> <span class=\"marker-highlight\">As a result</span>, families are forced to cut back on discretionary spending to maintain essential home heating and cooling. <span class=\"marker-highlight\">So</span>, utility price spikes act as an ongoing drag on regional retail markets and local economic activity."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Wages vs. Expenses)",
+        text: "Third, real wage growth has failed to keep pace with the overall rate of price increases. <span class=\"evidence-highlight\">A 2024 report by the Ministry of Health, Labour and Welfare indicated that real wages declined for more than twenty consecutive months despite nominal pay raises.</span> <span class=\"marker-highlight\">Consequently</span>, wage gains achieved during spring labor negotiations are quickly eroded by higher retail prices. <span class=\"marker-highlight\">Therefore</span>, closing the gap between stagnant paychecks and rising expenses remains a vital task for national economic policy."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, severe food inflation, high energy costs, and lagging real wages pose interconnected challenges for Japanese society. Protecting household living standards will require targeted tax adjustments and continuous wage support. Through synchronized government and private sector action, Japan can restore consumer confidence and long-term financial stability."
+      }
+    ],
+    plainText: "Rising living expenses and persistent food inflation have emerged as central socioeconomic concerns for households across modern Japan. Over the past two years, global supply chain bottlenecks, currency depreciation, and surging raw material costs have combined to drive up everyday expenditures. Understanding the primary drivers of this crisis is essential for developing effective policy solutions. First, food inflation has created an immediate financial burden on everyday domestic budgets. According to a 2024 survey by the Ministry of Internal Affairs, food prices in Japan rose by 6.5% annually, with essential staples like rice and bread suffering sudden cost spikes. This shows that basic daily nutrition now absorbs a significantly larger share of average family incomes than in previous decades. Because households cannot easily reduce food consumption, high inflation directly undermines overall consumer purchasing power. Second, escalating utility and energy bills have placed additional strain on low- and middle-income residents. Data from the Agency for Natural Resources and Energy revealed that household electricity rates increased by over 18% following international energy market volatility. As a result, families are forced to cut back on discretionary spending to maintain essential home heating and cooling. So, utility price spikes act as an ongoing drag on regional retail markets and local economic activity. Third, real wage growth has failed to keep pace with the overall rate of price increases. A 2024 report by the Ministry of Health, Labour and Welfare indicated that real wages declined for more than twenty consecutive months despite nominal pay raises. Consequently, wage gains achieved during spring labor negotiations are quickly eroded by higher retail prices. Therefore, closing the gap between stagnant paychecks and rising expenses remains a vital task for national economic policy. In conclusion, severe food inflation, high energy costs, and lagging real wages pose interconnected challenges for Japanese society. Protecting household living standards will require targeted tax adjustments and continuous wage support. Through synchronized government and private sector action, Japan can restore consumer confidence and long-term financial stability.",
+    translation: "<b>【第1段落：導入】</b><br>生活費の上昇と持続的な食料インフレは、現代日本の家計にとって中心的な社会経済的懸念事項となっています。過去2年間、世界的なサプライチェーンの停滞、通貨安、原材料コストの高騰が相まって日常生活費を押し上げています。この危機の主な要因を理解することは、効果的な政策解決策を策定する上で不可欠です。<br><br><b>【第2段落：本論1（食料インフレ）】</b><br>第一に、食料インフレは日々の家計に即座の経済的負担を生み出しています。総務省の2024年調査によると、日本の食料価格は年率6.5%上昇し、米やパンなどの基本主食が突然の価格高騰に見舞われました。これは、基本的な日常の食費が過去数十年よりも平均世帯収入の著しく大きな割合を占めていることを示しています。世帯が食料消費を簡単に減らすことができないため、高いインフレは消費者全体の購買力を直接低下させます。<br><br><b>【第3段落：本論2（光熱費・エネルギー）】</b><br>第二に、光熱費やエネルギー料金のエスカレートが、低所得および中所得住民に更なるプレッシャーを与えています。資源エネルギー庁のデータによると、国際エネルギー市場の変動を受けて家庭用電気料金が18%以上上昇したことが明らかになりました。その結果、家族は必要な暖房や冷房を維持するために選択的支出（娯楽等）を削らざるを得なくなっています。したがって、光熱費の急騰は地域の小売市場や地元経済活動の持続的な重荷となっています。<br><br><b>【第4段落：本論3（賃金対支出）】</b><br>第三に、実質賃金の伸びが物価上昇の全般的なペースに追いついていません。厚生労働省の2024年レポートによると、名目賃金の上昇にもかかわらず、実質賃金は20ヶ月以上にわたって減少したことが示されています。結果として、春闘で達成された賃上げの成果は、より高い店頭価格によって急速に侵食されています。それゆえ、停滞する給与と上昇する支出の間のギャップを埋めることが、国家経済政策の重要な課題であり続けています。<br><br><b>【第5段落：結論】</b><br>結論として、深刻な食料インフレ、高いエネルギーコスト、そして低迷する実質賃金は、日本社会に相互に関連する課題を突きつけています。家計の生活水準を守るためには、的を絞った税制調整と継続的な賃金支援が必要です。政府と民間部門の同調した行動を通じて、日本は消費者の信頼と長期的な財政的安定を取り戻すことができます。",
+    expressions: [
+      ["supply chain bottlenecks", "サプライチェーンの停滞・ボトルネック"],
+      ["consumer purchasing power", "消費者の購買力"],
+      ["discretionary spending", "選択的支出（自由裁量支出）"],
+      ["consecutive months", "連続した月"],
+      ["nominal pay raises", "名目上の給与引き上げ（ベースアップ）"]
+    ]
+  },
+  {
+    id: 2,
+    title: "2. Labor Shortages / 深刻な人手不足",
+    wordCount: "420 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "Japan is currently experiencing structural worker shortages across critical public and private sectors, including healthcare, transport, construction, and hospitality. Rapid demographic shifts have reduced the size of the national workforce to historical lows. Analyzing the key factors behind this labor deficit is essential for maintaining economic operations."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Demographic Decline)",
+        text: "First, a shrinking working-age population is the primary root cause of national labor shortages. <span class=\"evidence-highlight\">According to 2024 data from the Ministry of Internal Affairs, Japan's population aged 15 to 64 declined by over 500,000 individuals in a single year.</span> <span class=\"marker-highlight\">This shows that</span> industries are competing for a rapidly diminishing pool of available domestic job applicants. <span class=\"marker-highlight\">Because</span> demographic contraction is continuous, traditional recruitment methods can no longer fill structural vacancies."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (Logistics & Transport Crisis)",
+        text: "Second, strict labor caps and grueling working conditions have severely impacted essential transport sectors. <span class=\"evidence-highlight\">A 2024 report by the Japan Logistics Society revealed that new overtime restrictions created a 14% deficit in nationwide freight delivery capacity.</span> <span class=\"marker-highlight\">As a result</span>, supply chains face frequent shipping delays while regional businesses struggle to send goods efficiently. <span class=\"marker-highlight\">So</span>, labor shortages in transportation now threaten broader national economic connectivity."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Healthcare & Elderly Care)",
+        text: "Third, rising service demands in elderly care facilities have created acute staffing emergencies. <span class=\"evidence-highlight\">Data published by the Ministry of Health, Labour and Welfare showed that there were over 3.5 job openings for every qualified care worker in 2024.</span> <span class=\"marker-highlight\">Consequently</span>, existing healthcare workers face excessive workloads and high risk of professional burnout. <span class=\"marker-highlight\">Therefore</span>, attracting new talent through higher compensation and modern technology is urgent for public welfare."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, demographic shrinking, logistics constraints, and healthcare demand spikes are accelerating Japan's labor shortage. Overcoming this crisis will require embracing automation, expanding foreign worker programs, and reforming workplace practices. Through these comprehensive strategies, Japan can build a resilient and sustainable future workforce."
+      }
+    ],
+    plainText: "Japan is currently experiencing structural worker shortages across critical public and private sectors, including healthcare, transport, construction, and hospitality. Rapid demographic shifts have reduced the size of the national workforce to historical lows. Analyzing the key factors behind this labor deficit is essential for maintaining economic operations. First, a shrinking working-age population is the primary root cause of national labor shortages. According to 2024 data from the Ministry of Internal Affairs, Japan's population aged 15 to 64 declined by over 500,000 individuals in a single year. This shows that industries are competing for a rapidly diminishing pool of available domestic job applicants. Because demographic contraction is continuous, traditional recruitment methods can no longer fill structural vacancies. Second, strict labor caps and grueling working conditions have severely impacted essential transport sectors. A 2024 report by the Japan Logistics Society revealed that new overtime restrictions created a 14% deficit in nationwide freight delivery capacity. As a result, supply chains face frequent shipping delays while regional businesses struggle to send goods efficiently. So, labor shortages in transportation now threaten broader national economic connectivity. Third, rising service demands in elderly care facilities have created acute staffing emergencies. Data published by the Ministry of Health, Labour and Welfare showed that there were over 3.5 job openings for every qualified care worker in 2024. Consequently, existing healthcare workers face excessive workloads and high risk of professional burnout. Therefore, attracting new talent through higher compensation and modern technology is urgent for public welfare. In conclusion, demographic shrinking, logistics constraints, and healthcare demand spikes are accelerating Japan's labor shortage. Overcoming this crisis will require embracing automation, expanding foreign worker programs, and reforming workplace practices. Through these comprehensive strategies, Japan can build a resilient and sustainable future workforce.",
+    translation: "<b>【第1段落：導入】</b><br>日本は現在、医療、運輸、建設、宿泊など、重要な公共および民間セクター全般で構造的な人手不足に直面しています。急速な人口構成の変化により、国内の労働人口規模は歴史的な低水準にまで減少しました。この労働力不足の背景にある主な要因を分析することは、経済活動の維持にとって不可欠です。<br><br><b>【第2段落：本論1（人口減少）】</b><br>第一に、生産年齢人口の減少が国内の人手不足の根本的な主因です。総務省の2024年データによると、日本の15歳から64歳までの人口はわずか1年で50万人以上減少しました。これは、産業界が急速に減少する国内求職者の争奪戦を繰り広げていることを示しています。人口縮小が持続的であるため、伝統的な採用方法ではもはや構造的な欠員を埋めることができません。<br><br><b>【第3段落：本論2（物流・運送危機）】</b><br>第二に、厳格な労働時間上限と過酷な労働条件が、重要な輸送セクターに深刻な影響を与えています。日本物流学会の2024年レポートによると、新しい残業規制により全国の貨物輸送能力に14%の不足が生じたことが明らかになりました。その結果、サプライチェーンは頻繁な配送遅延に直面し、地方企業は効率的に商品を発送するのに苦慮しています。したがって、運輸業における人手不足は現在、より広い国家経済の接続性を脅かしています。<br><br><b>【第4段落：本論3（医療・介護）】</b><br>第三に、高齢者介護施設におけるサービス需要の高まりが、深刻な人員危機を引き起こしています。厚生労働省が公表したデータによると、2024年には有資格の介護職員1人に対して3.5件以上の求人がありました。結果として、既存の医療・介護従事者は過度な負担と燃え尽き症候群の高いリスクに直面しています。それゆえ、高水準の報酬や最新技術を通じて新たな人材を引き付けることが公衆福祉にとって急務です。<br><br><b>【第5段落：結論】</b><br>結論として、人口縮小、物流の制約、そして介護需要の急増が日本の人手不足を加速させています。この危機を乗り越えるには、自動化の推進、外国人労働者プログラムの拡大、そして職場慣行の改革が必要です。これらの包括的な戦略を通じて、日本は強靭で持続可能な将来の労働力を構築することができます。",
+    expressions: [
+      ["structural worker shortages", "構造的な労働力不足"],
+      ["working-age population", "生産年齢人口 (15〜64歳)"],
+      ["overtime restrictions", "残業時間の制限"],
+      ["qualified care worker", "有資格の介護従事者"],
+      ["professional burnout", "職業上の燃え尽き症候群"]
+    ]
+  },
+  {
+    id: 3,
+    title: "3. Tourism and Overtourism / 観光ブームとオーバーツーリズム",
+    wordCount: "430 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "The rapid post-pandemic recovery of inbound international travel has brought unprecedented numbers of foreign visitors to Japan's historic capitals and natural landmarks. While this travel boom injects vital capital into local commercial ecosystems, it also causes widespread disruption known as overtourism. Balancing economic growth with civic livability has become an urgent policy challenge."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Economic Benefits)",
+        text: "First, incoming international tourism provides crucial revenue for regional businesses and cultural preservation. <span class=\"evidence-highlight\">According to 2024 statistics from the Japan National Tourism Organization, international visitors spent a record 5.3 trillion yen across domestic hotels, restaurants, and craft shops.</span> <span class=\"marker-highlight\">This shows that</span> tourism serves as an effective economic engine for rural municipalities struggling with economic stagnation. <span class=\"marker-highlight\">Because</span> visitor spending directly supports local employment, maintaining robust travel infrastructure remains highly desirable."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (Public Transport Congestion)",
+        text: "Second, overcrowding on municipal public transport has created severe friction for local residents. <span class=\"evidence-highlight\">A 2024 city survey in Kyoto revealed that over 70% of local commuters experienced extreme bus delays due to tourists carrying large luggage.</span> <span class=\"marker-highlight\">As a result</span>, long-time citizens struggle to complete daily errands or reach workplaces on schedule. <span class=\"marker-highlight\">So</span>, unmanaged tourist mobility threatens to erode the daily quality of life in historical urban centers."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Environmental & Cultural Strain)",
+        text: "Third, illegal littering, noise pollution, and cultural misunderstandings strain public infrastructure and local goodwill. <span class=\"evidence-highlight\">Recent municipal reports from Mount Fuji local authorities showed a 40% increase in mountain trash and unsafe climbing attempts during peak season.</span> <span class=\"marker-highlight\">Consequently</span>, local governments must expend significant public funds on cleanup operations and additional policing. <span class=\"marker-highlight\">Therefore</span>, implementing strict tourist management policies is necessary to protect natural ecosystems and historical heritage."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, while inbound tourism offers major financial rewards, severe transport congestion and environmental strain highlight the dangers of unregulated travel growth. Mitigating these issues requires tiered pricing, visitor caps on fragile sites, and promoting lesser-known regional destinations. Through sustainable management practices, Japan can welcome foreign guests while safeguarding municipal harmony."
+      }
+    ],
+    plainText: "The rapid post-pandemic recovery of inbound international travel has brought unprecedented numbers of foreign visitors to Japan's historic capitals and natural landmarks. While this travel boom injects vital capital into local commercial ecosystems, it also causes widespread disruption known as overtourism. Balancing economic growth with civic livability has become an urgent policy challenge. First, incoming international tourism provides crucial revenue for regional businesses and cultural preservation. According to 2024 statistics from the Japan National Tourism Organization, international visitors spent a record 5.3 trillion yen across domestic hotels, restaurants, and craft shops. This shows that tourism serves as an effective economic engine for rural municipalities struggling with economic stagnation. Because visitor spending directly supports local employment, maintaining robust travel infrastructure remains highly desirable. Second, overcrowding on municipal public transport has created severe friction for local residents. A 2024 city survey in Kyoto revealed that over 70% of local commuters experienced extreme bus delays due to tourists carrying large luggage. As a result, long-time citizens struggle to complete daily errands or reach workplaces on schedule. So, unmanaged tourist mobility threatens to erode the daily quality of life in historical urban centers. Third, illegal littering, noise pollution, and cultural misunderstandings strain public infrastructure and local goodwill. Recent municipal reports from Mount Fuji local authorities showed a 40% increase in mountain trash and unsafe climbing attempts during peak season. Consequently, local governments must expend significant public funds on cleanup operations and additional policing. Therefore, implementing strict tourist management policies is necessary to protect natural ecosystems and historical heritage. In conclusion, while inbound tourism offers major financial rewards, severe transport congestion and environmental strain highlight the dangers of unregulated travel growth. Mitigating these issues requires tiered pricing, visitor caps on fragile sites, and promoting lesser-known regional destinations. Through sustainable management practices, Japan can welcome foreign guests while safeguarding municipal harmony.",
+    translation: "<b>【第1段落：導入】</b><br>コロナ後の急速な国際インバウンド観光の回復は、日本の歴史的な首都や自然的名所に前例のない数の外国人観光客をもたらしています。この観光ブームが地元の商業エコシステムに重要な資金を注入する一方で、オーバーツーリズム（観光公害）として知られる広範な混乱も引き起こしています。経済成長と市民の住みやすさのバランスをとることが急務の政策課題となっています。<br><br><b>【第2段落：本論1（経済的利益）】</b><br>第一に、訪日外国人観光は地域企業や文化財の保全にとって重要な収益を提供しています。日本政府観光局の2024年の統計によると、外国人旅行者は国内のホテル、レストラン、伝統工芸品店で過去最高の5.3兆円を費やしました。これは、観光が経済的停滞に苦しむ地方自治体にとって効果的な経済エンジンとして機能していることを示しています。観光客の支出が地元の雇用を直接支えているため、堅牢な観光インフラを維持することは極めて望ましいことです。<br><br><b>【第3段落：本論2（公共交通機関の混雑）】</b><br>第二に、市営公共交通機関の過密化が地域住民との間に深刻な摩擦を生み出しています。京都市の2024年の市民調査によると、地元の通勤・通学者の70%以上が、大きな荷物を持った観光客によるバスの著しい遅延を経験したことが明らかになりました。その結果、長年の市民が日々の買い物や職場への時間通りの移動に苦慮しています。したがって、管理されていない観光客の移動は、歴史的都市中心部における日々の生活の質を侵食する恐れがあります。<br><br><b>【第4段落：本論3（環境・文化への負荷）】</b><br>第三に、不法投棄、騒音公害、文化的誤解が公共インフラと地元の善意を圧迫しています。富士山周辺自治体の最近の市町村レポートによると、ピークシーズン中に山のゴミや危険な登山試みが40%増加したことが示されました。結果として、地方自治体は清掃活動や警備の追加に多額の公金を出費しなければなりません。それゆえ、自然生態系と歴史的遺産を守るためには、厳格な観光管理政策の実施が必要です。<br><br><b>【第5段落：結論】</b><br>結論として、インバウンド観光が大きな経済的見返りをもたらす一方で、深刻な交通混雑や環境への負荷は、無制限な観光成長の危険性を浮き彫りにしています。これらの問題を緩和するには、二重価格制（価格階層化）、脆弱な場所での入場制限、知られていない地域目的地への誘導が必要です。持続可能な管理実践を通じて、日本は地域の調和を守りながら外国のゲストを歓迎することができます。",
+    expressions: [
+      ["inbound international travel", "訪日外国人旅行"],
+      ["civic livability", "市民の住みやすさ・生活適合性"],
+      ["historic preservation", "歴史的保全"],
+      ["transport congestion", "交通混雑・過密"],
+      ["tiered pricing", "二重価格設定・段階的価格制"]
+    ]
+  },
+  {
+    id: 4,
+    title: "4. Wages vs. Inflation / 賃金上昇とインフレの比較",
+    wordCount: "410 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "Addressing the growing gap between nominal salary increases and consumer price inflation has become a priority for Japanese economic planners. Although major corporations have raised base pay rates during recent labor negotiations, persistent inflation continues to diminish household purchasing power. Evaluating the dynamics between wage trends and inflation is necessary for lasting economic recovery."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Corporate Pay Increases)",
+        text: "First, nominal wage growth in large corporations has reached its highest level in thirty years. <span class=\"evidence-highlight\">According to 2024 data from the Keidanren business federation, major firms agreed to average wage increases of over 5.1% during spring labor negotiations.</span> <span class=\"marker-highlight\">This shows that</span> executive leaders recognize the urgent necessity of protecting employee livelihoods against inflation. <span class=\"marker-highlight\">Because</span> large enterprises possess financial reserves, they can effectively pass wage increases down to their employees."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (SME Salary Lag)",
+        text: "Second, small and medium-sized enterprises (SMEs) struggle to replicate these substantial salary hikes. <span class=\"evidence-highlight\">A 2024 survey by the Tokyo Chamber of Commerce revealed that nearly 60% of SMEs were unable to raise base wages due to high raw material costs.</span> <span class=\"marker-highlight\">As a result</span>, millions of workers employed in smaller businesses experience declining living standards. <span class=\"marker-highlight\">So</span>, the expanding wage disparity between big corporations and small firms undermines broader societal cohesion."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Real Wage Decline)",
+        text: "Third, persistent consumer price spikes have kept nationwide real wage growth in negative territory. <span class=\"evidence-highlight\">Official figures from the Ministry of Health, Labour and Welfare showed real pay declining by 1.3% year-on-year in mid-2024.</span> <span class=\"marker-highlight\">Consequently</span>, price gains on daily groceries continue to consume any gross salary gains earned by households. <span class=\"marker-highlight\">Therefore</span>, consumer confidence remains low, preventing a robust recovery in national domestic consumption."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, while large firms have initiated historical nominal pay raises, SME financial limitations and real wage declines restrict overall economic growth. Achieving sustainable prosperity requires government subsidies for small business productivity alongside targeted tax incentives. By aligning pay raises with real living costs, Japan can achieve healthy inflation driven by solid domestic spending."
+      }
+    ],
+    plainText: "Addressing the growing gap between nominal salary increases and consumer price inflation has become a priority for Japanese economic planners. Although major corporations have raised base pay rates during recent labor negotiations, persistent inflation continues to diminish household purchasing power. Evaluating the dynamics between wage trends and inflation is necessary for lasting economic recovery. First, nominal wage growth in large corporations has reached its highest level in thirty years. According to 2024 data from the Keidanren business federation, major firms agreed to average wage increases of over 5.1% during spring labor negotiations. This shows that executive leaders recognize the urgent necessity of protecting employee livelihoods against inflation. Because large enterprises possess financial reserves, they can effectively pass wage increases down to their employees. Second, small and medium-sized enterprises (SMEs) struggle to replicate these substantial salary hikes. A 2024 survey by the Tokyo Chamber of Commerce revealed that nearly 60% of SMEs were unable to raise base wages due to high raw material costs. As a result, millions of workers employed in smaller businesses experience declining living standards. So, the expanding wage disparity between big corporations and small firms undermines broader societal cohesion. Third, persistent consumer price spikes have kept nationwide real wage growth in negative territory. Official figures from the Ministry of Health, Labour and Welfare showed real pay declining by 1.3% year-on-year in mid-2024. Consequently, price gains on daily groceries continue to consume any gross salary gains earned by households. Therefore, consumer confidence remains low, preventing a robust recovery in national domestic consumption. In conclusion, while large firms have initiated historical nominal pay raises, SME financial limitations and real wage declines restrict overall economic growth. Achieving sustainable prosperity requires government subsidies for small business productivity alongside targeted tax incentives. By aligning pay raises with real living costs, Japan can achieve healthy inflation driven by solid domestic spending.",
+    translation: "<b>【第1段落：導入】</b><br>名目給与の引き上げと消費者物価インフレとの広がるギャップに対処することは、日本の経済立案者にとって優先事項となっています。大企業が最近の労使交渉（春闘）で基本給を引き上げたものの、持続的なインフレにより家計の購買力は減少傾向にあります。賃金動向とインフレの動向を評価することは、持続的な経済回復にとって不可欠です。<br><br><b>【第2段落：本論1（大企業の賃上げ）】</b><br>第一に、大企業における名目賃金の伸びは30年ぶりの高水準に達しました。経団連の2024年データによると、主要企業は春闘において平均5.1%以上の賃上げに合意しました。これは、経営陣がインフレから従業員の生活を守る緊急の必要性を認識していることを示しています。大企業は財務的余裕を保有しているため、従業員に対して賃上げを効果的に還元できます。<br><br><b>【第3段落：本論2（中小企業の賃金停滞）】</b><br>第二に、中小企業（SME）はこのような大幅な給与引き上げを再現するのに苦慮しています。東京商工会議所の2024年調査によると、原材料コストの高騰により中小企業の約60%が基本給のベースアップを実施できませんでした。その結果、中小企業で働く何百万人もの労働者が生活水準の低下を経験しています。したがって、大企業と中小企業の間の広がる賃金格差は、社会全体の結束を損ないます。<br><br><b>【第4段落：本論3（実質賃金の減少）】</b><br>第三に、持続的な消費者物価の急騰により、全国の実質賃金の伸びはマイナス領域にとどまっています。厚生労働省の公式数値によると、2024年半ばに実質賃金が前年比1.3%減少したことが示されました。結果として、日用品の価格上昇が、家計が獲得した総給与の増加分を消費し続けています。それゆえ、消費者のマインドは低いままであり、国内消費の堅調な回復を妨げています。<br><br><b>【第5段落：結論】</b><br>結論として、大企業が歴史的な名目賃上げを開始した一方で、中小企業の財務的制限と実質賃金の低下が全体の経済成長を制限しています。持続可能な繁栄を達成するには、的を絞った優遇税制と並行して中小企業の生産性向上に対する政府補助金が必要です。給与引き上げを実際の生活費に一致させることで、日本は健全な国内消費に牽引される望ましいインフレを達成できます。",
+    expressions: [
+      ["nominal salary increases", "名目給与引き上げ"],
+      ["spring labor negotiations", "春の労働交渉（春闘）"],
+      ["small and medium-sized enterprises (SMEs)", "中小企業"],
+      ["wage disparity", "賃金格差"],
+      ["domestic consumption", "国内消費"]
+    ]
+  },
+  {
+    id: 5,
+    title: "5. AI and Digital Transformation / AIとデジタルトランスフォーメーション",
+    wordCount: "425 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "The integration of generative artificial intelligence and modern digital tools is rapidly reshaping Japanese schools, enterprises, and public institutions. Proponents celebrate AI's ability to streamline routine administrative tasks and alleviate chronic labor shortages. However, the adoption of advanced automation also introduces ethics, data privacy, and intellectual property challenges."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Educational Enhancement)",
+        text: "First, generative AI applications provide tailored learning opportunities for students and reduce administrative overhead for teachers. <span class=\"evidence-highlight\">According to a 2024 survey by the Ministry of Education (MEXT), over 45% of public high schools have initiated pilot programs using AI tutors for language practice.</span> <span class=\"marker-highlight\">This shows that</span> digital assistance can adapt to individual student learning speeds while grading basic assignments automatically. <span class=\"marker-highlight\">Because</span> teachers spend less time on repetitive paperwork, they can devote more energy to direct mentorship."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (Corporate Productivity)",
+        text: "Second, enterprise digital transformation boosts corporate efficiency and offsets severe staffing shortages. <span class=\"evidence-highlight\">A 2024 study by the Japan Productivity Center demonstrated that companies implementing automated software workflows increased operational output by 22%.</span> <span class=\"marker-highlight\">As a result</span>, firms maintain productivity levels even while operating with fewer administrative employees. <span class=\"marker-highlight\">So</span>, digital tools serve as an indispensable asset for business continuity in a shrinking society."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Ethical & Regulatory Risks)",
+        text: "Third, unregulated AI implementation raises valid concerns regarding copyright violation, misinformation, and data security. <span class=\"evidence-highlight\">A 2024 policy paper by the Japan Lawyers Association highlighted that over 60% of surveyed creators expressed worry about AI algorithms utilizing copyrighted artistic work without permission.</span> <span class=\"marker-highlight\">Consequently</span>, blind reliance on unverified generative content risks generating legal conflicts and false information. <span class=\"marker-highlight\">Therefore</span>, establishing robust legal frameworks and copyright safeguards is vital."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, artificial intelligence offers major benefits for academic instruction and business productivity, but requires thoughtful regulation to manage copyright and privacy risks. Maximizing AI's potential will require promoting media literacy education alongside flexible legal standards. Through balanced governance, Japan can leverage digital innovation while protecting ethical societal values."
+      }
+    ],
+    plainText: "The integration of generative artificial intelligence and modern digital tools is rapidly reshaping Japanese schools, enterprises, and public institutions. Proponents celebrate AI's ability to streamline routine administrative tasks and alleviate chronic labor shortages. However, the adoption of advanced automation also introduces ethics, data privacy, and intellectual property challenges. First, generative AI applications provide tailored learning opportunities for students and reduce administrative overhead for teachers. According to a 2024 survey by the Ministry of Education (MEXT), over 45% of public high schools have initiated pilot programs using AI tutors for language practice. This shows that digital assistance can adapt to individual student learning speeds while grading basic assignments automatically. Because teachers spend less time on repetitive paperwork, they can devote more energy to direct mentorship. Second, enterprise digital transformation boosts corporate efficiency and offsets severe staffing shortages. A 2024 study by the Japan Productivity Center demonstrated that companies implementing automated software workflows increased operational output by 22%. As a result, firms maintain productivity levels even while operating with fewer administrative employees. So, digital tools serve as an indispensable asset for business continuity in a shrinking society. Third, unregulated AI implementation raises valid concerns regarding copyright violation, misinformation, and data security. A 2024 policy paper by the Japan Lawyers Association highlighted that over 60% of surveyed creators expressed worry about AI algorithms utilizing copyrighted artistic work without permission. Consequently, blind reliance on unverified generative content risks generating legal conflicts and false information. Therefore, establishing robust legal frameworks and copyright safeguards is vital. In conclusion, artificial intelligence offers major benefits for academic instruction and business productivity, but requires thoughtful regulation to manage copyright and privacy risks. Maximizing AI's potential will require promoting media literacy education alongside flexible legal standards. Through balanced governance, Japan can leverage digital innovation while protecting ethical societal values.",
+    translation: "<b>【第1段落：導入】</b><br>生成人工知能（AI）と現代のデジタルツールの統合は、日本の学校、企業、公的機関を急速に再構築しています。支持者は日常の行政・事務作業を効率化し、慢性的な人手不足を緩和するAIの能力を評価しています。しかし、高度な自動化の導入は、倫理、データプライバシー、知的財産に関する課題ももたらします。<br><br><b>【第2段落：本論1（教育の強化）】</b><br>第一に、生成AIアプリケーションは生徒に合わせた個別最適な学習の機会を提供し、教員の事務負担を軽減します。文部科学省の2024年調査によると、公立高校の45%以上が語学学習にAIチューターを使用する実証プログラムを開始しました。これは、基本課題の採点を自動化しながら、デジタル支援が生徒個人の学習速度に適応できることを示しています。教員が反復的な書類作成に費やす時間が減少するため、直接的な指導やメンターシップにより多くのエネルギーを注ぐことができます。<br><br><b>【第3段落：本論2（企業の生産性）】</b><br>第二に、企業のデジタルトランスフォーメーションは業務効率を高め、深刻な人員不足を補います。日本生産性本部の2024年研究では、自動ソフトウェアワークフローを導入した企業が業務アウトプットを22%増加させたことが示されました。その結果、企業は少ない事務従業員で運営していても生産性水準を維持できます。したがって、デジタルツールは人口減少社会における事業継続にとって不可欠な資産として機能します。<br><br><b>【第4段落：本論3（倫理的・規制的リスク）】</b><br>第三に、規制のないAIの導入は、著作権侵害、誤情報、データセキュリティに関して妥当な懸念を引き起こします。日本弁護士連合会の2024年政策文書では、調査対象となったクリエイターの60%以上が、著作権で保護された芸術作品が許可なくAIアルゴリズムに利用されることに懸念を表明したと強調されています。結果として、未検証の生成コンテンツへの盲目的依存は、法的紛争や偽情報を生み出すリスクがあります。それゆえ、強固な法的枠組みと著作権保護措置を確立することが不可欠です。<br><br><b>【第5段落：結論】</b><br>結論として、人工知能は学術指導や企業の生産性に大きな利益をもたらしますが、著作権やプライバシーのリスクを管理するための思慮深い規制が必要です。AIの可能性を最大限に引き出すには、柔軟な法的基準と並行してメディアリテラシー教育を推進する必要があります。バランスの取れた統治を通じて、日本は倫理的社会価値を守りつつ、デジタルイノベーションを活用することができます。",
+    expressions: [
+      ["generative artificial intelligence", "生成人工知能"],
+      ["tailored learning opportunities", "個別のニーズに合わせた学習の機会"],
+      ["administrative overhead", "事務・行政上の負担"],
+      ["intellectual property challenges", "知的財産権の課題"],
+      ["media literacy education", "メディアリテラシー教育"]
+    ]
+  },
+  {
+    id: 6,
+    title: "6. Demographic Decline / 人口減少と少子高齢化",
+    wordCount: "435 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "Japan's accelerating fertility decline combined with a rapidly aging society represents the nation's most formidable structural crisis. As birth rates drop to record lows, the tax base shrinks while health and welfare obligations expand exponentially. Examining the mechanisms driving demographic contraction is critical for stabilizing national social security systems."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Shrinking Birth Rates)",
+        text: "First, declining marriage rates and financial insecurity among young adults have reduced annual births dramatically. <span class=\"evidence-highlight\">According to official 2023 demographic data from the Ministry of Health, Labour and Welfare, annual births in Japan dropped below 730,000 for the first time in recorded history.</span> <span class=\"marker-highlight\">This shows that</span> high housing costs, long work hours, and unstable non-regular employment discourage young couples from starting families. <span class=\"marker-highlight\">Because</span> family formation is continuously delayed, nationwide fertility rates remain far below the replacement level."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (Social Security Pressure)",
+        text: "Second, an expanding elderly population exerts extreme fiscal strain on public pension and medical care systems. <span class=\"evidence-highlight\">Cabinet Office statistics from 2024 indicated that citizens aged 65 and older reached a record 29.1% of the total national population.</span> <span class=\"marker-highlight\">As a result</span>, a shrinking pool of working-age taxpayers must subsidize rising healthcare payouts for senior citizens. <span class=\"marker-highlight\">So</span>, intergenerational financial imbalances threaten to destabilize public welfare budgets over the next decade."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Regional Depopulation)",
+        text: "Third, rural depopulation leads to the abandonment of housing infrastructure and the collapse of regional services. <span class=\"evidence-highlight\">A 2024 report by the Ministry of Land, Infrastructure, Transport and Tourism estimated that over 8.9 million rural residential homes currently stand empty across Japan.</span> <span class=\"marker-highlight\">Consequently</span>, local governments struggle to maintain basic public utilities, public transit, and emergency services. <span class=\"marker-highlight\">Therefore</span>, regional municipalities face potential dissolution unless youth migration patterns can be reshaped."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, record-low birth rates, pension strains, and rural house abandonments are compounding Japan's demographic decline. Reversing these trends requires massive public investment in direct childcare subsidies, parental leave policies, and flexible career paths for young mothers. Through courageous social spending and immigration integration, Japan can achieve demographic sustainability."
+      }
+    ],
+    plainText: "Japan's accelerating fertility decline combined with a rapidly aging society represents the nation's most formidable structural crisis. As birth rates drop to record lows, the tax base shrinks while health and welfare obligations expand exponentially. Examining the mechanisms driving demographic contraction is critical for stabilizing national social security systems. First, declining marriage rates and financial insecurity among young adults have reduced annual births dramatically. According to official 2023 demographic data from the Ministry of Health, Labour and Welfare, annual births in Japan dropped below 730,000 for the first time in recorded history. This shows that high housing costs, long work hours, and unstable non-regular employment discourage young couples from starting families. Because family formation is continuously delayed, nationwide fertility rates remain far below the replacement level. Second, an expanding elderly population exerts extreme fiscal strain on public pension and medical care systems. Cabinet Office statistics from 2024 indicated that citizens aged 65 and older reached a record 29.1% of the total national population. As a result, a shrinking pool of working-age taxpayers must subsidize rising healthcare payouts for senior citizens. So, intergenerational financial imbalances threaten to destabilize public welfare budgets over the next decade. Third, rural depopulation leads to the abandonment of housing infrastructure and the collapse of regional services. A 2024 report by the Ministry of Land, Infrastructure, Transport and Tourism estimated that over 8.9 million rural residential homes currently stand empty across Japan. Consequently, local governments struggle to maintain basic public utilities, public transit, and emergency services. Therefore, regional municipalities face potential dissolution unless youth migration patterns can be reshaped. In conclusion, record-low birth rates, pension strains, and rural house abandonments are compounding Japan's demographic decline. Reversing these trends requires massive public investment in direct childcare subsidies, parental leave policies, and flexible career paths for young mothers. Through courageous social spending and immigration integration, Japan can achieve demographic sustainability.",
+    translation: "<b>【第1段落：導入】</b><br>日本の加速する少子化と急速に高齢化する社会の統合は、国家にとって最も恐ろしい構造的危機を表しています。出生率が過去最低に落ち込む中、税収基盤が縮小する一方で医療や福祉の義務が飛躍的に拡大しています。人口縮小を推進するメカニズムを検証することは、国家の社会保障制度を安定させるために重要です。<br><br><b>【第2段落：本論1（出生率低下）】</b><br>第一に、若者の婚姻率低下と経済的不安が年間の出生数を劇的に減少させています。厚生労働省の2023年人口動態公式データによると、日本の年間出生数は記録史上初めて73万人を下回りました。これは、高い住居費、長い労働時間、不安定な非正規雇用が若いカップルの家族形成を思いとどまらせていることを示しています。家族形成が継続的に遅れているため、全国の合計特殊出生率は置換水準（2.1）を大幅に下回ったままです。<br><br><b>【第3段落：本論2（社会保障の圧迫）】</b><br>第二に、拡大する高齢者人口が公的年金や医療介護制度に極度の財政的負担を与えています。内閣府の2024年の統計によると、65歳以上の市民が総人口の過去最高の29.1%に達したことが示されました。その結果、減少する生産年齢の納税者層が、高齢者の増加する医療給付を補助しなければなりません。したがって、世代間の財政的不均衡は今後10年間にわたって公的福祉予算を不安定化させる恐れがあります。<br><br><b>【第4段落：本論3（地方の過疎化）】</b><br>第三に、地方の過疎化が住宅インフラの放置や地域サービスの崩壊を引き起こしています。国土交通省の2024年レポートでは、日本全国で890万戸以上の地方住宅が現在空き家になっていると推計されています。結果として、地方自治体は基本的な公共事業、公共交通機関、救急サービスを維持するのに苦慮しています。それゆえ、若者の移動パターンを再形成できない限り、地方自治体は消滅の可能性に直面しています。<br><br><b>【第5段落：結論】</b><br>結論として、過去最低の出生率、年金の圧迫、地方の空き家問題が日本の人口減少を悪化させています。これらの傾向を逆転させるには、直接的な育児手当、育児休業政策、働く母親のための柔軟なキャリアパスへの大規模な公的投資が必要です。勇敢な社会支出と移民の統合を通じて、日本は人口統計上の持続可能性を達成することができます。",
+    expressions: [
+      ["demographic contraction", "人口縮小・減少"],
+      ["replacement level", "人口置換水準 (2.1)"],
+      ["intergenerational financial imbalances", "世代間の財政的不均衡"],
+      ["residential homes stand empty", "住宅が空き家になっている"],
+      ["demographic sustainability", "人口統計上の持続可能性"]
+    ]
+  },
+  {
+    id: 7,
+    title: "7. Education Issues / 教育現場の課題",
+    wordCount: "415 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "Public school systems in Japan are confronting structural pressures including chronic teacher overwork, mental burnout, and declining student enrollments. Educating the next generation effectively requires maintaining high pedagogical standards while protecting educator well-being. Examining the core obstacles within the public education framework is crucial for meaningful reform."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Teacher Workloads)",
+        text: "First, excessive administrative duties and long working hours have caused severe teacher shortages. <span class=\"evidence-highlight\">According to a 2024 survey by the Ministry of Education (MEXT), public school teachers averaged over 11 hours of daily on-site work, with 30% exceeding critical overtime safety thresholds.</span> <span class=\"marker-highlight\">This shows that</span> educators are overwhelmed by clerical tasks, club activity coaching, and mandatory reports. <span class=\"marker-highlight\">Because</span> working conditions remain punishing, fewer university graduates are choosing teaching careers."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (Student Mental Health)",
+        text: "Second, student mental health concerns and school non-attendance have climbed to historical levels. <span class=\"evidence-highlight\">Official MEXT data for 2023 showed that over 290,000 elementary and junior high students were classified as chronic non-attendants (futoko).</span> <span class=\"marker-highlight\">As a result</span>, traditional rigid classroom environments fail to support students experiencing social anxiety or academic stress. <span class=\"marker-highlight\">So</span>, schools must urgently expand psychological counseling and flexible online learning options."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Rural School Closures)",
+        text: "Third, regional student population drops force frequent school consolidations and long commutes. <span class=\"evidence-highlight\">A 2024 regional education board report indicated that over 400 public schools close permanently each year due to insufficient class sizes.</span> <span class=\"marker-highlight\">Consequently</span>, children living in rural villages lose neighborhood community hubs and face exhaustive daily travel times. <span class=\"marker-highlight\">Therefore</span>, regional educational access becomes increasingly unequal compared to urban districts."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, teacher overwork, rising non-attendance, and rural school closures threaten the foundation of Japan's public education system. Addressing these problems requires hiring non-teaching administrative staff, funding specialized counselors, and leveraging digital classrooms. Through modernizing educational infrastructure, Japan can ensure equitable learning for all children."
+      }
+    ],
+    plainText: "Public school systems in Japan are confronting structural pressures including chronic teacher overwork, mental burnout, and declining student enrollments. Educating the next generation effectively requires maintaining high pedagogical standards while protecting educator well-being. Examining the core obstacles within the public education framework is crucial for meaningful reform. First, excessive administrative duties and long working hours have caused severe teacher shortages. According to a 2024 survey by the Ministry of Education (MEXT), public school teachers averaged over 11 hours of daily on-site work, with 30% exceeding critical overtime safety thresholds. This shows that educators are overwhelmed by clerical tasks, club activity coaching, and mandatory reports. Because working conditions remain punishing, fewer university graduates are choosing teaching careers. Second, student mental health concerns and school non-attendance have climbed to historical levels. Official MEXT data for 2023 showed that over 290,000 elementary and junior high students were classified as chronic non-attendants (futoko). As a result, traditional rigid classroom environments fail to support students experiencing social anxiety or academic stress. So, schools must urgently expand psychological counseling and flexible online learning options. Third, regional student population drops force frequent school consolidations and long commutes. A 2024 regional education board report indicated that over 400 public schools close permanently each year due to insufficient class sizes. Consequently, children living in rural villages lose neighborhood community hubs and face exhaustive daily travel times. Therefore, regional educational access becomes increasingly unequal compared to urban districts. In conclusion, teacher overwork, rising non-attendance, and rural school closures threaten the foundation of Japan's public education system. Addressing these problems requires hiring non-teaching administrative staff, funding specialized counselors, and leveraging digital classrooms. Through modernizing educational infrastructure, Japan can ensure equitable learning for all children.",
+    translation: "<b>【第1段落：導入】</b><br>日本の公立学校制度は、慢性的な教員の過重労働、精神的燃え尽き、生徒の在籍数減少などの構造的圧力に直面しています。次世代を効果的に教育するには、教育者の福祉を守りながら高水準の教授基準を維持することが必要です。公教育の枠組み内にある中核的障害を検証することは、意味のある改革にとって極めて重要です。<br><br><b>【第2段落：本論1（教員の負担）】</b><br>第一に、過度な行政事務作業と長い労働時間が深刻な教員不足を引き起こしています。文部科学省の2024年調査によると、公立学校の教員は現場での1日の平均勤務時間が11時間を超え、30%が危険な残業過労死ラインを超過していました。これは、教育者が事務作業、部活動の指導、義務的報告書に圧倒されていることを示しています。労働条件が過酷なままであるため、教職キャリアを選択する大学卒業生が減少しています。<br><br><b>【第3段落：本論2（生徒のメンタルヘルス・不登校）】</b><br>第二に、生徒のメンタルヘルスの懸念と不登校が歴史的水準に達しています。文部科学省の2023年の公式データでは、小中学校で29万人以上の生徒が長期不登校に分類されたことが示されました。その結果、従来の硬直した教室環境は、社会的不安や学業上のストレスを経験している生徒をサポートできていません。したがって、学校は心理カウンセリングや柔軟なオンライン学習の選択肢を急遽拡大しなければなりません。<br><br><b>【第4段落：本論3（地方の学校統廃合）】</b><br>第三に、地方の生徒人口の減少が頻繁な学校の統廃合と長い通学時間を余儀なくさせています。2024年の地域教育委員会のレポートによると、学級数が不十分なため、毎年400以上の公立学校が永久に閉校していることが示されました。結果として、地方の村に住む子供たちは地域のコミュニティ拠点を失い、疲労を伴う毎日の移動時間に直面しています。それゆえ、地方の教育アクセスは都市部と比較してますます不平等になっています。<br><br><b>【第5段落：結論】</b><br>結論として、教員の過重労働、不登校の増加、そして地方の学校の閉鎖は、日本の公教育システムの基盤を脅かしています。これらの問題に対処するには、教員以外の行政スタッフの雇用、専門カウンセラーへの資金提供、デジタル教室の活用が必要です。教育インフラを現代化することを通じて、日本はすべての子供たちに公平な学習を保障することができます。",
+    expressions: [
+      ["pedagogical standards", "教育的・教授法上の基準"],
+      ["overtime safety thresholds", "過労死ライン・残業安全基準値"],
+      ["chronic non-attendants (futoko)", "不登校児童生徒"],
+      ["school consolidations", "学校の統廃合"],
+      ["equitable learning", "公平・公正な学習"]
+    ]
+  },
+  {
+    id: 8,
+    title: "8. Energy and Climate Concerns / エネルギーと気候変動の懸念",
+    wordCount: "420 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "Achieving long-term energy security while meeting international carbon reduction targets has become one of Japan's most complex strategic challenges. Highly reliant on imported fossil fuels, Japan faces geopolitical price volatility alongside rising demands for environmental sustainability. Analyzing the domestic energy framework is vital for ensuring industrial survival."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Fossil Fuel Dependence)",
+        text: "First, heavy dependence on imported natural gas and petroleum leaves the domestic economy vulnerable to international crises. <span class=\"evidence-highlight\">According to 2024 statistics from the Agency for Natural Resources and Energy, Japan relies on foreign imports for over 85% of its primary energy supply.</span> <span class=\"marker-highlight\">This shows that</span> global market instability or currency fluctuations directly spark utility cost spikes for Japanese factories and homes. <span class=\"marker-highlight\">Because</span> energy imports are paid in foreign currencies, exchange rate drops immediately increase domestic living costs."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (Renewable Energy Expansion)",
+        text: "Second, expanding solar and wind infrastructure encounters geographical limitations and grid storage problems. <span class=\"evidence-highlight\">A 2024 study by the Institute of Energy Economics Japan showed that renewable sources generated 24% of electricity, but grid instability caused frequent power curtailment.</span> <span class=\"marker-highlight\">As a result</span>, solar power generated during peak daytime hours cannot be fully stored for nighttime industrial use. <span class=\"marker-highlight\">So</span>, massive investment in advanced battery storage technology is necessary to stabilize renewable energy integration."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Nuclear Power Debates)",
+        text: "Third, restarting nuclear power plants remains a contentious policy issue due to safety concerns. <span class=\"evidence-highlight\">Public opinion polls conducted by national media in 2024 revealed that citizens remain evenly split (48% in favor, 47% opposed) regarding nuclear reactor restarts.</span> <span class=\"marker-highlight\">Consequently</span>, government authorities face prolonged administrative and judicial delays when attempting to operationalize inactive nuclear infrastructure. <span class=\"marker-highlight\">Therefore</span>, forging national consensus on safe nuclear power is crucial for reaching net-zero carbon goals."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, import dependence, grid limits on renewables, and nuclear safety debates complicate Japan's energy transition. Overcoming these hurdles requires accelerating battery innovations, expanding offshore wind farms, and enforcing strict safety protocols for nuclear facilities. Through a diversified green energy strategy, Japan can achieve both economic stability and environmental leadership."
+      }
+    ],
+    plainText: "Achieving long-term energy security while meeting international carbon reduction targets has become one of Japan's most complex strategic challenges. Highly reliant on imported fossil fuels, Japan faces geopolitical price volatility alongside rising demands for environmental sustainability. Analyzing the domestic energy framework is vital for ensuring industrial survival. First, heavy dependence on imported natural gas and petroleum leaves the domestic economy vulnerable to international crises. According to 2024 statistics from the Agency for Natural Resources and Energy, Japan relies on foreign imports for over 85% of its primary energy supply. This shows that global market instability or currency fluctuations directly spark utility cost spikes for Japanese factories and homes. Because energy imports are paid in foreign currencies, exchange rate drops immediately increase domestic living costs. Second, expanding solar and wind infrastructure encounters geographical limitations and grid storage problems. A 2024 study by the Institute of Energy Economics Japan showed that renewable sources generated 24% of electricity, but grid instability caused frequent power curtailment. As a result, solar power generated during peak daytime hours cannot be fully stored for nighttime industrial use. So, massive investment in advanced battery storage technology is necessary to stabilize renewable energy integration. Third, restarting nuclear power plants remains a contentious policy issue due to safety concerns. Public opinion polls conducted by national media in 2024 revealed that citizens remain evenly split (48% in favor, 47% opposed) regarding nuclear reactor restarts. Consequently, government authorities face prolonged administrative and judicial delays when attempting to operationalize inactive nuclear infrastructure. Therefore, forging national consensus on safe nuclear power is crucial for reaching net-zero carbon goals. In conclusion, import dependence, grid limits on renewables, and nuclear safety debates complicate Japan's energy transition. Overcoming these hurdles requires accelerating battery innovations, expanding offshore wind farms, and enforcing strict safety protocols for nuclear facilities. Through a diversified green energy strategy, Japan can achieve both economic stability and environmental leadership.",
+    translation: "<b>【第1段落：導入】</b><br>国際的な二酸化炭素削減目標を満たしながら長期的なエネルギー安全保障を達成することは、日本の最も複雑な戦略的課題の一つとなっています。輸入化石燃料に大きく依存している日本は、環境持続可能性への要求の高まりと並行して、地政学的な価格変動に直面しています。国内エネルギー枠組みを分析することは、産業の生存を確保するために不可欠です。<br><br><b>【第2段落：本論1（化石燃料依存）】</b><br>第一に、輸入天然ガスや石油への重い依存は、国内経済を国際危機に対して脆弱なままにしています。資源エネルギー庁の2024年の統計によると、日本は一次エネルギー供給の85%以上を外国からの輸入に依存しています。これは、世界市場の不安定性や通貨の変動が、日本の工場や家庭の光熱費急騰を直接引き起こすことを示しています。エネルギー輸入が外貨で支払われるため、為替レートの下落は即座に国内の生活費を押し上げます。<br><br><b>【第3段落：本論2（再生可能エネルギーの拡大）】</b><br>第二に、太陽光や風力インフラの拡大は、地理的制限や送電網の蓄電問題に遭遇します。日本エネルギー経済研究所の2024年研究では、再生可能エネルギーが電力の24%を供給したものの、送電網の不安定さにより頻繁な出力抑制が発生したことが示されました。その結果、日中のピーク時に発電された太陽光電力を夜間の産業利用のために完全に蓄電することができません。したがって、再生可能エネルギーの統合を安定させるには、高度な蓄電池技術への大規模な投資が必要です。<br><br><b>【第4段落：本論3（原発再稼働議論）】</b><br>第三に、原子力発電所の再稼働は、安全上の懸念から論争の続く政策問題であり続けています。全国メディアが2024年に実施した世論調査では、原子炉の再稼働に関して市民の意見が均等に割れている（賛成48%、反対47%）ことが明らかになりました。結果として、政府当局は停止中の原子力インフラの稼働を試みる際、長引く行政的および司法上の遅延に直面します。それゆえ、安全な原子力発電に関する国民的合意を形成することは、カーボン実質ゼロ目標に到達するために極めて重要です。<br><br><b>【第5段落：結論】</b><br>結論として、輸入依存、再生可能エネルギーの送電網制限、そして原子力の安全性の議論が、日本のエネルギー転換を複雑にしています。これらの障害を克服するには、蓄電池イノベーションの加速、洋上風力発電所の拡大、そして原子力施設の厳格な安全プロトコルの施行が必要です。多様化されたグリーンエネルギー戦略を通じて、日本は経済的安定と環境面でのリーダーシップの両方を達成することができます。",
+    expressions: [
+      ["energy security", "エネルギー安全保障"],
+      ["imported fossil fuels", "輸入化石燃料"],
+      ["power curtailment", "出力抑制（発電制限）"],
+      ["contentious policy issue", "論争を呼ぶ政策課題"],
+      ["net-zero carbon goals", "カーボンネットゼロ（排出実質ゼロ）目標"]
+    ]
+  },
+  {
+    id: 9,
+    title: "9. Regional Revitalization / 地域活性化の挑戦",
+    wordCount: "415 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "Rejuvenating regional economies outside of major metropolitan centers like Tokyo has become an urgent priority for Japanese spatial planners. Decades of youth migration to urban capitals have drained rural prefectures of human capital, creating shuttered commercial streets and shrinking tax bases. Evaluating innovative solutions for regional revitalization is necessary for balanced national growth."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Urban Migration)",
+        text: "First, continuous youth migration toward Tokyo accelerates rural economic decline. <span class=\"evidence-highlight\">According to 2024 population movement statistics from the Cabinet Office, Tokyo recorded a net population inflow of over 68,000 young adults in a single year.</span> <span class=\"marker-highlight\">This shows that</span> regional towns lose their most educated and creative young workers to metropolitan corporate headquarters. <span class=\"marker-highlight\">Because</span> rural communities lack high-paying professional jobs, retaining local talent remains exceptionally difficult."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (Remote Work & Digital Migration)",
+        text: "Second, expanding remote work infrastructure enables urban professionals to relocate to countryside communities. <span class=\"evidence-highlight\">A 2024 survey by the Japan Rural Revitalization Agency revealed that over 15,000 IT workers migrated to rural towns under flexible work-from-home arrangements.</span> <span class=\"marker-highlight\">As a result</span>, local coffee shops, coworking hubs, and regional tax revenues experience immediate growth. <span class=\"marker-highlight\">So</span>, digital connectivity provides a practical bridge for transferring urban wealth into rural economies."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Local Entrepreneurship)",
+        text: "Third, government-sponsored entrepreneurial grants encourage young innovators to launch niche businesses in traditional towns. <span class=\"evidence-highlight\">Data from the Small and Medium Enterprise Agency indicated that municipal starter grants boosted regional startup creation by 18% in 2023.</span> <span class=\"marker-highlight\">Consequently</span>, abandoned traditional houses (kominka) are repurposed into boutique hotels, craft breweries, and organic farms. <span class=\"marker-highlight\">Therefore</span>, combining local cultural heritage with modern business models creates vibrant regional brand identities."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, while youth migration to Tokyo strains rural communities, remote work trends and startup grants offer tangible pathways for regional rebirth. Sustaining revitalization requires high-speed digital networks, tax incentives for corporate decentralization, and welcoming local communities. By empowering regional hubs, Japan can build a balanced and resilient national economy."
+      }
+    ],
+    plainText: "Rejuvenating regional economies outside of major metropolitan centers like Tokyo has become an urgent priority for Japanese spatial planners. Decades of youth migration to urban capitals have drained rural prefectures of human capital, creating shuttered commercial streets and shrinking tax bases. Evaluating innovative solutions for regional revitalization is necessary for balanced national growth. First, continuous youth migration toward Tokyo accelerates rural economic decline. According to 2024 population movement statistics from the Cabinet Office, Tokyo recorded a net population inflow of over 68,000 young adults in a single year. This shows that regional towns lose their most educated and creative young workers to metropolitan corporate headquarters. Because rural communities lack high-paying professional jobs, retaining local talent remains exceptionally difficult. Second, expanding remote work infrastructure enables urban professionals to relocate to countryside communities. A 2024 survey by the Japan Rural Revitalization Agency revealed that over 15,000 IT workers migrated to rural towns under flexible work-from-home arrangements. As a result, local coffee shops, coworking hubs, and regional tax revenues experience immediate growth. So, digital connectivity provides a practical bridge for transferring urban wealth into rural economies. Third, government-sponsored entrepreneurial grants encourage young innovators to launch niche businesses in traditional towns. Data from the Small and Medium Enterprise Agency indicated that municipal starter grants boosted regional startup creation by 18% in 2023. Consequently, abandoned traditional houses (kominka) are repurposed into boutique hotels, craft breweries, and organic farms. Therefore, combining local cultural heritage with modern business models creates vibrant regional brand identities. In conclusion, while youth migration to Tokyo strains rural communities, remote work trends and startup grants offer tangible pathways for regional rebirth. Sustaining revitalization requires high-speed digital networks, tax incentives for corporate decentralization, and welcoming local communities. By empowering regional hubs, Japan can build a balanced and resilient national economy.",
+    translation: "<b>【第1段落：導入】</b><br>東京のような大都市圏以外の地域経済を活性化させることは、日本の国土立案者にとって急務となっています。数十年にわたる若者の都市部への流出は、地方から人的資本を奪い、シャッター通りや税収基盤の縮小を引き起こしてきました。地域活性化のための革新的な解決策を評価することは、バランスの取れた国家の成長にとって不可欠です。<br><br><b>【第2段落：本論1（都市部への人口流出）】</b><br>第一に、若者の東京への継続的な流出が地方の経済的衰退を加速させています。内閣府の2024年の人口移動統計によると、東京はわずか1年で68,000人以上の若い成人の純流入（転入超過）を記録しました。これは、地方の町が最も高教育で創造的な若手労働者を大都市の企業本社に奪われていることを示しています。地方コミュニティには高給の専門職が不足しているため、地元の優秀な人材を引き留めることは非常に困難です。<br><br><b>【第3段落：本論2（リモートワーク・デジタル移住）】</b><br>第二に、リモートワークインフラの拡大により、都市部のプロフェッショナルが農村コミュニティに移住できるようになります。日本地域活性化庁の2024年調査では、柔軟な在宅勤務契約のもとで15,000人以上のIT労働者が地方の町に移住したことが明らかになりました。その結果、地元のカフェ、コワーキングハブ、地域の税収が即座の成長を経験しています。したがって、デジタル接続性は都市の財を地方経済に移転するための実用的な橋渡しを提供します。<br><br><b>【第4段落：本論3（地域起業家精神）】</b><br>第三に、政府主催の起業補助金は、若いイノベーターが伝統的な町でニッチビジネスを立ち上げることを後押ししています。中小企業庁のデータによると、自治体の創業補助金が2023年に地域のスタートアップ創出を18%増加させたことが示されました。結果として、放置された古民家がブティックホテル、クラフトビール醸造所、オーガニック農園に再利用されています。それゆえ、地元の文化遺産と現代のビジネスモデルを組み合わせることで、活気ある地域のブランドアイデンティティが生まれます。<br><br><b>【第5段落：結論】</b><br>結論として、東京への若者流出が地方コミュニティを圧迫する一方で、リモートワークの傾向とスタートアップ補助金は地域再生のための具体的な道筋を提供しています。活性化を持続させるには、高速デジタルネットワーク、企業の分散に対する税制優遇、そして歓迎的な地元コミュニティが必要です。地域の拠点を強化することで、日本はバランスの取れた強靭な国家経済を築くことができます。",
+    expressions: [
+      ["rejuvenating regional economies", "地域経済を活性化・若返らせること"],
+      ["net population inflow", "人口の純流入・転入超過"],
+      ["repurposed into boutique hotels", "ブティックホテルに再利用・リノベーションされる"],
+      ["corporate decentralization", "企業の地方分散"],
+      ["balanced national growth", "バランスの取れた国家の成長"]
+    ]
+  },
+  {
+    id: 10,
+    title: "10. Defense and Security / 防衛と安全保障の議論",
+    wordCount: "425 Words",
+    paragraphs: [
+      {
+        type: "intro",
+        tag: "Paragraph 1: Introduction",
+        text: "Evolving geopolitical tensions in East Asia have brought national security and defense policy to the forefront of Japanese legislative debates. Shifting regional power dynamics and maritime disputes have prompted policymakers to re-evaluate traditional defense postures. Analyzing the strategic arguments surrounding security reform is essential for understanding Japan's international diplomacy."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 2: Main Body 1 (Increased Defense Spending)",
+        text: "First, significant increases in the national defense budget aim to modernize deterrence capabilities. <span class=\"evidence-highlight\">According to official 2024 Ministry of Defense budget documentation, national defense spending expanded to a record 7.9 trillion yen, targeting advanced missile defense and cybersecurity.</span> <span class=\"marker-highlight\">This shows that</span> government leaders prioritize military readiness in response to unpredictable regional security environments. <span class=\"marker-highlight\">Because</span> regional security risks have intensified, bolstering national hardware capabilities is viewed as urgent."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 3: Main Body 2 (Diplomatic Alliances)",
+        text: "Second, strengthening bilateral security alliances reinforces maritime stability across the Indo-Pacific region. <span class=\"evidence-highlight\">A 2024 joint statement by the US-Japan Security Consultative Committee confirmed expanded joint military exercises and shared intelligence sharing networks.</span> <span class=\"marker-highlight\">As a result</span>, Japan deepens strategic cooperation with democratic partners to prevent unprovoked regional conflicts. <span class=\"marker-highlight\">So</span>, international security partnerships act as a vital counterweight to potential regional instability."
+      },
+      {
+        type: "body",
+        tag: "Paragraph 4: Main Body 3 (Constitutional Debates)",
+        text: "Third, parliamentary debates regarding Article 9 of the Constitution highlight domestic divisions over counterstrike abilities. <span class=\"evidence-highlight\">A 2024 national poll by the Yomiuri Shimbun showed that 52% of citizens supported clarifying the legal status of the Self-Defense Forces, while 44% opposed constitutional changes.</span> <span class=\"marker-highlight\">Consequently</span>, policymakers face intense public scrutiny when proposing expanded military mandates. <span class=\"marker-highlight\">Therefore</span>, maintaining a careful balance between deterrence power and pacifist principles remains essential."
+      },
+      {
+        type: "conclusion",
+        tag: "Paragraph 5: Conclusion",
+        text: "<span class=\"marker-highlight\">In conclusion</span>, record defense spending, alliance integration, and constitutional debates define Japan's modern security strategy. Safeguarding national peace requires combining robust defensive deterrence with active multilateral diplomacy. Through transparent public dialogue, Japan can protect its sovereign borders while upholding its long-standing commitment to global peace."
+      }
+    ],
+    plainText: "Evolving geopolitical tensions in East Asia have brought national security and defense policy to the forefront of Japanese legislative debates. Shifting regional power dynamics and maritime disputes have prompted policymakers to re-evaluate traditional defense postures. Analyzing the strategic arguments surrounding security reform is essential for understanding Japan's international diplomacy. First, significant increases in the national defense budget aim to modernize deterrence capabilities. According to official 2024 Ministry of Defense budget documentation, national defense spending expanded to a record 7.9 trillion yen, targeting advanced missile defense and cybersecurity. This shows that government leaders prioritize military readiness in response to unpredictable regional security environments. Because regional security risks have intensified, bolstering national hardware capabilities is viewed as urgent. Second, strengthening bilateral security alliances reinforces maritime stability across the Indo-Pacific region. A 2024 joint statement by the US-Japan Security Consultative Committee confirmed expanded joint military exercises and shared intelligence sharing networks. As a result, Japan deepens strategic cooperation with democratic partners to prevent unprovoked regional conflicts. So, international security partnerships act as a vital counterweight to potential regional instability. Third, parliamentary debates regarding Article 9 of the Constitution highlight domestic divisions over counterstrike abilities. A 2024 national poll by the Yomiuri Shimbun showed that 52% of citizens supported clarifying the legal status of the Self-Defense Forces, while 44% opposed constitutional changes. Consequently, policymakers face intense public scrutiny when proposing expanded military mandates. Therefore, maintaining a careful balance between deterrence power and pacifist principles remains essential. In conclusion, record defense spending, alliance integration, and constitutional debates define Japan's modern security strategy. Safeguarding national peace requires combining robust defensive deterrence with active multilateral diplomacy. Through transparent public dialogue, Japan can protect its sovereign borders while upholding its long-standing commitment to global peace.",
+    translation: "<b>【第1段落：導入】</b><br>東アジアにおける地政学的緊張の増大は、国家安全保障と防衛政策を日本の国会論争の最前線にもたらしています。地域の力学の変化や海上領土紛争により、政策立案者は従来の防衛姿勢の再評価を余儀なくされています。安全保障改革をめぐる戦略的議論を分析することは、日本の国際外交を理解する上で不可欠です。<br><br><b>【第2段落：本論1（防衛費増額）】</b><br>第一に、国家防衛予算の大幅な増加は抑止能力の現代化を目指しています。防衛省の2024年公式予算文書によると、国の防衛支出は高度なミサイル防衛とサイバーセキュリティを対象として、過去最高の7.9兆円に拡大しました。これは、政府のリーダーたちが予測不可能な地域安全保障環境に対応して軍事的準備を優先していることを示しています。地域の安全保障リスクが増大しているため、ハードウェア能力の強化が急務とみなされています。<br><br><b>【第3段落：本論2（外交同盟）】</b><br>第二に、二国間安全保障同盟の強化がインド太平洋地域全体の海上安定を強化します。日米安全保障協議委員会の2024年共同声明では、拡大された合同軍事演習と共有インテリジェンスネットワークが確認されました。その結果、日本は無用な地域紛争を防ぐために民主主義パートナーとの戦略的協力を深めています。したがって、国際安全保障パートナーシップは、潜在的な地域の不安定に対する重要な対抗策として機能します。<br><br><b>【第4段落：本論3（憲法議論）】</b><br>第三に、憲法第9条に関する国会での議論は、反撃能力（敵基地攻撃能力）をめぐる国内の意見の対立を浮き彫りにしています。読売新聞の2024年全国世論調査によると、市民の52%が自衛隊の法的地位の明確化を支持したのに対し、44%が改憲に反対しました。結果として、政策立案者は拡張された軍事任務を提案する際、国民の厳しい監視に直面します。それゆえ、抑止力と平和主義の原則との間の慎重なバランスを維持することが不可欠であり続けています。<br><br><b>【第5段落：結論】</b><br>結論として、過去最高の防衛費、同盟の統合、そして憲法議論が日本の現代の安全保障戦略を定義しています。国家の平和を守るには、強力な防衛抑止力と積極的な多国間外交を組み合わせることが必要です。透明性のある国民的対話を通じて、日本は世界平和への長年のコミットメントを維持しながら主権国境を守ることができます。",
+    expressions: [
+      ["geopolitical tensions", "地政学的緊張"],
+      ["deterrence capabilities", "抑止能力"],
+      ["bilateral security alliances", "二国間安全保障同盟"],
+      ["Self-Defense Forces", "自衛隊 (SDF)"],
+      ["pacifist principles", "平和主義の原則"]
+    ]
+  }
+];
+
+let currentEssayIndex = 0;
+let showTranslationState = true;
+
+/* RENDER ESSAY SELECTION TABS */
+function renderEssayTabs(){
+  const container = document.getElementById("essayTabs");
+  container.innerHTML = essaysData.map((e, i) => `
+    <button class="topic-tab ${i === currentEssayIndex ? 'active' : ''}" onclick="selectEssay(${i})">
+      Topic ${e.id}
+    </button>
+  `).join("");
+}
+
+function selectEssay(idx){
+  currentEssayIndex = idx;
+  renderEssayTabs();
+  renderCurrentEssay();
+}
+
+function renderCurrentEssay(){
+  const e = essaysData[currentEssayIndex];
+  document.getElementById("currentEssayTitle").textContent = e.title;
+  document.getElementById("currentWordCount").textContent = e.wordCount;
+  
+  // Render paragraphs separated clearly
+  document.getElementById("currentEssayBody").innerHTML = e.paragraphs.map(p => `
+    <div class="essay-paragraph">
+      <span class="para-tag ${p.type === 'intro' ? 'tag-intro' : p.type === 'body' ? 'tag-body' : 'tag-conclusion'}">${p.tag}</span>
+      <div>${p.text}</div>
+    </div>
+  `).join("");
+  
+  document.getElementById("currentEssayTranslation").innerHTML = e.translation;
+  document.getElementById("currentEssayTranslation").style.display = showTranslationState ? "block" : "none";
+  document.getElementById("transToggleBtn").textContent = showTranslationState ? "非表示にする" : "表示する";
+  
+  document.getElementById("currentEssayExpressions").innerHTML = e.expressions.map(ex => `
+    <li class="vocab-item">
+      <span class="en-phrase">${escapeHtml(ex[0])}</span>
+      <span class="jp-phrase">${escapeHtml(ex[1])}</span>
+    </li>
+  `).join("");
+}
+
+function toggleTranslation(){
+  showTranslationState = !showTranslationState;
+  renderCurrentEssay();
+}
+
+function speakCurrentEssay(){
+  if(!("speechSynthesis" in window)){
+    toast("Text-to-speech not supported on this browser / 音声読上げ非対応です");
+    return;
+  }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(essaysData[currentEssayIndex].plainText);
+  u.lang = "en-US";
+  u.rate = 0.92;
+  speechSynthesis.speak(u);
+  toast("Playing 5-paragraph audio... / 音声読上げを開始しました 🔊");
+}
+
+function copyCurrentEssay(){
+  navigator.clipboard.writeText(essaysData[currentEssayIndex].plainText);
+  toast("Essay copied to clipboard! / エッセイをコピーしました 📋");
+}
+
+/* NAVIGATION LOGIC */
+function go(id){
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.querySelector("#view-" + id).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.view === id));
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+function scrollToGuidance(){
+  go('home');
+  setTimeout(() => {
+    const el = document.getElementById("guidanceSection");
+    if(el) el.scrollIntoView({behavior: "smooth"});
+  }, 100);
+}
+
+document.querySelectorAll(".nav button").forEach(b => b.onclick = () => go(b.dataset.view));
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(window._toast);
+  window._toast = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+/* CHALLENGE SECTION LOGIC */
+function submitBlanksChallenge(){
+  const v1 = document.getElementById("cb1").value.trim().toLowerCase();
+  const v2 = document.getElementById("cb2").value.trim().toLowerCase();
+  const v3 = document.getElementById("cb3").value.trim().toLowerCase();
+  
+  const ok1 = v1.includes("shows") || v1.includes("indicates") || v1.includes("proves") || v1.includes("demonstrates");
+  const ok2 = v2.includes("result") || v2.includes("consequence") || v2.includes("so") || v2.includes("therefore");
+  const ok3 = v3.includes("conclusion") || v3.includes("sum") || v3.includes("short") || v3.includes("summary");
+  
+  const box = document.getElementById("blankFeedback");
+  box.classList.remove("hidden");
+  
+  if(ok1 && ok2 && ok3){
+    box.style.background = "var(--success-bg)";
+    box.style.borderColor = "var(--success-border)";
+    box.innerHTML = `
+      <b style="color:var(--success-text); font-size:16px;">🎉 Outstanding Job! 正解です！</b>
+      <p style="margin:6px 0 0; font-size:14px; color:var(--text);">
+        You correctly identified the transition markers for explanation (Sentence 3), linking (Sentence 4), and conclusion!<br>
+        （第3文の解説、第4文の橋渡し、および結論を導く転換語が完璧に選択されています。）
+      </p>`;
+    toast("Challenge Passed! 🌟");
+  } else {
+    box.style.background = "var(--warn-bg)";
+    box.style.borderColor = "var(--warn-border)";
+    box.innerHTML = `
+      <b style="color:var(--warn-text); font-size:16px;">💡 Keep Going! もう一息です！</b>
+      <p style="margin:6px 0 0; font-size:14px; color:var(--text);">
+        <b>Hints:</b><br>
+        Blank 1 (Sentence 3): <i>This shows that</i> or <i>This indicates that</i><br>
+        Blank 2 (Sentence 4): <i>As a result</i> or <i>Consequently</i><br>
+        Blank 3 (Conclusion): <i>In conclusion</i> or <i>To sum up</i>
+      </p>`;
+  }
+}
+
+function resetBlanksChallenge(){
+  document.getElementById("cb1").value = "";
+  document.getElementById("cb2").value = "";
+  document.getElementById("cb3").value = "";
+  document.getElementById("blankFeedback").classList.add("hidden");
+}
+
+/* CATCHY TITLE CREATOR GAME */
+function submitTitleGame(){
+  const title = document.getElementById("userTitleInput").value.trim();
+  const res = document.getElementById("titleFeedbackResult");
+  
+  if(!title){
+    res.innerHTML = `<span class="no-sign">⚠️ Please enter a title! / タイトルを入力してください</span>`;
+    return;
+  }
+  
+  const len = title.length;
+  const wordCount = title.split(/\s+/).length;
+  const hasPowerWords = /renaissance|transform|future|remote|rise|impact|revolution|escape|shift|boom|crisis|beyond|new era/i.test(title);
+  const hasPunctuation = title.includes(":") || title.includes("—") || title.includes("?");
+  
+  if(wordCount >= 4 && (hasPowerWords || hasPunctuation || len >= 25)){
+    res.innerHTML = `
+      <div style="text-align:center; padding:12px; background:var(--brand-light); border-radius:12px; border:1px solid #c7d2fe;">
+        <div class="star-rating">⭐⭐⭐⭐⭐</div>
+        <b style="color:var(--brand-text); font-size:16px; display:block; margin-top:4px;">Wonderful & Catchy Title! / 素晴らしいタイトルです！</b>
+        <span style="font-size:13px; color:var(--muted);">Your title engages the reader with strong vocabulary and clear structure.</span>
+      </div>`;
+    toast("You earned 5 stars! ⭐⭐⭐⭐⭐");
+  } else if(wordCount >= 2 && len >= 10){
+    res.innerHTML = `
+      <div style="text-align:center; padding:12px; background:var(--amber-light); border-radius:12px; border:1px solid #fde68a;">
+        <div class="star-rating" style="font-size:26px;">⭐⭐⭐</div>
+        <b style="color:#92400e; font-size:15px;">Good start! Add a colon (:) or punchier words for 5 stars.</b>
+        <div style="font-size:12px; color:#78350f;">(良いタイトルですが、コロンや強い単語を使ってさらに工夫できます)</div>
+      </div>`;
+  } else {
+    res.innerHTML = `
+      <div style="text-align:center; margin-top:8px;">
+        <span class="no-sign">NOOOOOO!!!! Too dull or generic! Try again!</span>
+        <p style="margin:6px 0 0; font-size:13px; color:var(--rose); font-weight:700;">
+          (ちょっと簡素すぎるか、ありきたりです！ practicalな言葉や強い単語を使って再挑戦して！)
+        </p>
+      </div>`;
+  }
+}
+
+/* WRITE YOUR OWN ESSAY STUDIO LOGIC */
+function updateOwnStats(){
+  const s = document.getElementById("ownBody").value.trim();
+  const words = s ? s.split(/\s+/).filter(x => x).length : 0;
+  const sent = s ? s.split(/[.!?]+/).filter(x => x.trim()).length : 0;
+  document.getElementById("ownWordCount").textContent = words;
+  document.getElementById("ownSentenceCount").textContent = sent;
+  document.getElementById("ownCharCount").textContent = s.length;
+}
+
+function copyOwnEssay(){
+  const t = document.getElementById("ownTitle").innerText.trim();
+  const b = document.getElementById("ownBody").value;
+  const full = `${t}\n\n${b}`;
+  navigator.clipboard.writeText(full);
+  toast("Your essay was copied to clipboard! / コピーしました 📋");
+}
+
+function exportPDF(){
+  window.print();
+}
+
+/* LOCAL STORAGE DATA PERSISTENCE */
+function saveAll(){
+  const data = {
+    sName: document.getElementById("sName").value,
+    sNumber: document.getElementById("sNumber").value,
+    sClass: document.getElementById("sClass").value,
+    ownTitle: document.getElementById("ownTitle").innerHTML,
+    ownBody: document.getElementById("ownBody").value,
+    cb1: document.getElementById("cb1").value,
+    cb2: document.getElementById("cb2").value,
+    cb3: document.getElementById("cb3").value,
+    userTitleInput: document.getElementById("userTitleInput").value
+  };
+  localStorage.setItem("socialTrendsStudentWork", JSON.stringify(data));
+  const st = document.getElementById("saveStatus");
+  if(st){
+    st.textContent = "✓ Saved / 保存完了";
+    setTimeout(() => st.textContent = "✓ Auto-Saved / 自動保存済", 2000);
+  }
+}
+
+function loadAll(){
+  const d = JSON.parse(localStorage.getItem("socialTrendsStudentWork") || "{}");
+  if(d.sName) document.getElementById("sName").value = d.sName;
+  if(d.sNumber) document.getElementById("sNumber").value = d.sNumber;
+  if(d.sClass) document.getElementById("sClass").value = d.sClass;
+  if(d.ownTitle) document.getElementById("ownTitle").innerHTML = d.ownTitle;
+  if(d.ownBody) document.getElementById("ownBody").value = d.ownBody;
+  if(d.cb1) document.getElementById("cb1").value = d.cb1;
+  if(d.cb2) document.getElementById("cb2").value = d.cb2;
+  if(d.cb3) document.getElementById("cb3").value = d.cb3;
+  if(d.userTitleInput) document.getElementById("userTitleInput").value = d.userTitleInput;
+  updateOwnStats();
+}
+
+function resetAll(){
+  if(!confirm("Are you sure you want to reset all your input data on this device?\nこのデバイス上のすべての入力データをリセットしますか？")) return;
+  localStorage.removeItem("socialTrendsStudentWork");
+  location.reload();
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  }[m]));
+}
+
+/* INITIALIZATION */
+document.addEventListener("DOMContentLoaded", () => {
+  renderEssayTabs();
+  renderCurrentEssay();
+  loadAll();
+});
+</script>
+</body>
+</html>
